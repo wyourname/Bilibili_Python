@@ -1,4 +1,3 @@
-import time
 import requests
 from Refactor_UserElement import *
 
@@ -32,7 +31,23 @@ class User(UserElement):
         except Exception as e:
             self.logger.error(e)
 
-    def consult_dynamic(self, url):    # 获取个人动态，为投币任务做准备
+    def drop_coin(self, bvid, csrf):
+        data_bv = {
+            'bvid': bvid,
+            'multiply': 1,
+            'csrf': csrf
+        }
+        try:
+            response = requests.post(self.url3, headers=self.headers, data=data_bv)
+            if response.status_code == 200:
+                data = response.json()
+                self.logger.info(data)
+            else:
+                self.logger.error("请求失败，状态码为：" + str(response.status_code))
+        except Exception as e:
+            self.logger.error(e)
+
+    def consult_dynamic(self, url):  # 获取个人动态，为投币任务做准备返回个人动态数据
         try:
             response = requests.get(url, headers=self.headers)
             if response.status_code == 200:
@@ -43,14 +58,4 @@ class User(UserElement):
         except Exception as e:
             self.logger.error(e)
 
-    def drop_coin(self, bvid, csrf):
-        data_bv = "bvid="+bvid+"multiply=2"+"&csrf="+csrf
-        try:
-            response = requests.post(self.url3, headers=self.headers, data=data_bv)
-            if response.status_code == 200:
-                data = response.json()
-                return data
-            else:
-                self.logger.error("请求失败，状态码为：" + str(response.status_code))
-        except Exception as e:
-            self.logger.error(e)
+
