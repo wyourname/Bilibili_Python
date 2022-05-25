@@ -25,8 +25,11 @@ class UserElement:
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
                           "Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47 "
         }
+
         self.url = "https://api.bilibili.com/x/web-interface/nav"
         self.url1 = "http://api.bilibili.com/x/relation/modify"
+        self.url2 = "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/all"
+        self.url3 = "http://api.bilibili.com/x/web-interface/coin/add"
         self.User_Cookie = []
         self.csrf = []
         logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -54,6 +57,5 @@ class UserElement:
                 csrf_dict = dict(element)
                 self.csrf.append(csrf_dict['bili_jct'])
         except Exception as e:
-            self.logger.info("请检查你的cookie是否正确")
-            self.logger.error(e)
+            self.logger.info("请检查你的cookie是否正确 " + str(e))
         return self.csrf
