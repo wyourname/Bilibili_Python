@@ -30,6 +30,8 @@ class UserElement:
         self.url1 = "http://api.bilibili.com/x/relation/modify"
         self.url2 = "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/all"
         self.url3 = "http://api.bilibili.com/x/web-interface/coin/add"
+        self.url4 = "http://api.bilibili.com/x/web-interface/share/add"
+        self.url5 = "http://api.bilibili.com/x/web-interface/archive/related"
         self.User_Cookie = []
         self.csrf = []
         logging.basicConfig(level=logging.INFO, format='%(message)s')
