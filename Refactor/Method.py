@@ -1,3 +1,5 @@
+import random
+
 import requests
 from Refactor_UserElement import *
 
@@ -69,6 +71,23 @@ class User(UserElement):
             response = requests.get(url, headers=self.headers)
             if response.status_code == 200:
                 data = response.json()
+                return data
+            else:
+                self.logger.error("请求失败，状态码为：" + str(response.status_code))
+        except Exception as e:
+            self.logger.error(e)
+
+    def play_video(self, bv, title):
+        data = {
+            "bvid": bv,
+            "play_time": random.randint(30, 45),
+            "realtime": random.randint(30, 45)
+        }
+        try:
+            response = requests.post(self.url6, headers=self.headers, data=data)
+            if response.status_code == 200:
+                data = response.json()
+                self.logger.info("播放：" + title)
                 return data
             else:
                 self.logger.error("请求失败，状态码为：" + str(response.status_code))
