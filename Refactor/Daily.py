@@ -1,4 +1,3 @@
-import random
 import time
 from Method import *
 
@@ -50,9 +49,9 @@ class Daily(User):
                     self.logger.info("已经投币" + str(len(final_bv)) + "个视频，不足5次跳转推荐视频投币")
                     for j in range(5 - len(final_bv)):
                         recommend_data = self.recommend(final_bv[0])  # 推荐视频
-                        title_re, bv_re = self.cope_recommend(recommend_data)
+                        title_re, bv_re = self.cope_recommend(recommend_data)  # 接收推荐视频数据
                         self.logger.info("视频标题：" + title_re[j] + "，视频bv：" + bv_re[j])
-                        data = self.drop_coin(bv_re, csrf)  # 打赏视频
+                        data = self.drop_coin(bv_re[j], csrf)  # 打赏视频
                         self.cope_drop_coin(data)
             if i == 4:
                 self.logger.info("视频数量到5,到此结束")
@@ -121,7 +120,8 @@ class Daily(User):
             play_data = self.play_video(bv[0], title[0])  # 播放视频
             self.cope_play_video(play_data)  # 处理播放视频返回数据
             self.start_drop_coin(title, bv, self.csrf[i])  # 投币函数,输出视频标题和bv信息
-            share_dynamic = self.share_dynamic(bv[0], title[0], self.csrf[i])  # 分享动态，只分享第一个视频
+            a = random.randint(0, len(bv))
+            share_dynamic = self.share_dynamic(bv[a], title[a], self.csrf[i])  # 分享动态，只分享第一个视频
             self.cope_share(share_dynamic)  # 输出分享返回数据
             data = self.get_requests(self.url)  # 获取用户信息,返回数据
             self.receive_message(data)
