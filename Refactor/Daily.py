@@ -25,8 +25,12 @@ class Daily(User):
         if dynamic['code'] == 0:
             for i in range(len(dynamic['data']['items'])):
                 if dynamic['data']['items'][i]['basic']['comment_type'] == 1:
-                    title.append(dynamic['data']['items'][i]['modules']['module_dynamic']['major']['archive']['title'])
-                    bv.append(dynamic['data']['items'][i]['modules']['module_dynamic']['major']['archive']['bvid'])
+                    if dynamic['data']['items'][i]['modules']['module_dynamic']['major']['type'] == 'MAJOR_TYPE_ARCHIVE':
+                        title.append(
+                            dynamic['data']['items'][i]['modules']['module_dynamic']['major']['archive']['title'])
+                        bv.append(dynamic['data']['items'][i]['modules']['module_dynamic']['major']['archive']['bvid'])
+                    else:
+                        continue
             return title, bv
         elif dynamic['code'] == -101:
             self.logger.info(dynamic['message'] + "请检查cookie")
@@ -120,7 +124,7 @@ class Daily(User):
             play_data = self.play_video(bv[0], title[0])  # 播放视频
             self.cope_play_video(play_data)  # 处理播放视频返回数据
             self.start_drop_coin(title, bv, self.csrf[i])  # 投币函数,输出视频标题和bv信息
-            a = random.randint(0, len(bv))
+            a = random.randint(0, len(bv)-1)
             share_dynamic = self.share_dynamic(bv[a], title[a], self.csrf[i])  # 分享动态，只分享第一个视频
             self.cope_share(share_dynamic)  # 输出分享返回数据
             data = self.get_requests(self.url)  # 获取用户信息,返回数据
