@@ -16,7 +16,7 @@
 
 使用方法：json文件写入bilibili的cookie，多账户就多添加一个"cookie":"",如下：
 
-##格式：
+### 格式：
 {
   "Users": [
     {
