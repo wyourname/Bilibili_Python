@@ -47,6 +47,7 @@ class ChosenTime(UserElement):
 
     def cope_roomId(self, data2):
         roomId = []
+        uid = []
         for i in range(len(data2)):
             if not data2[i]["pendant_info"].values():
                 continue
@@ -56,7 +57,7 @@ class ChosenTime(UserElement):
                         if data2[i]['pendant_info']['2']['content'] == '天选时刻':
                             self.logger.info("发现一个天选时刻")
                             roomId.append(data2[i]['roomid'])
-                            self.logger.info("房间号：%s" % data2[i]['roomid'])
+                            uid.append(data2[i]['uid'])
                         else:
                             continue
                     else:
@@ -64,11 +65,11 @@ class ChosenTime(UserElement):
                 else:
                     if data2[i]['pendant_info']['2']['content'] == '天选时刻':
                         self.logger.info("发现一个天选时刻")
-                        self.logger.info("房间号：%s" % data2[i]['roomid'])
                         roomId.append(data2[i]['roomid'])
+                        uid.append(data2[i]['uid'])
                     else:
                         continue
-        return roomId
+        return roomId, uid
 
     def cyc_get_roomId(self, pid, aid, csrf):
         page = 1
@@ -81,11 +82,19 @@ class ChosenTime(UserElement):
                 self.logger.info("扫描完毕")
                 break
             else:
-                roomid = self.cope_roomId(data2)
+                roomid, uid = self.cope_roomId(data2)
                 if len(roomid) > 0:
-                    id = self.check_Room(roomid[0])
-                    self.logger.info(id)
-                    self.TianXuan(roomid[0], id, csrf)
+                    rid = self.check_Room(roomid[0])
+                    self.TianXuan(roomid[0], rid, csrf)
+                    gid = self.check_group()
+                    if len(gid) > 0:
+                        self.logger.info("存在天选时刻分组，将用户%s移动到天选时刻分组" % uid[0])
+                        self.move_user(gid[0], uid[0], csrf)
+                    else:
+                        self.logger.info("不存在天选时刻分组，将创建天选时刻分组")
+                        gid = self.make_group(csrf)
+                        if len(gid) > 0: self.logger.info("创建天选时刻分组成功")
+                        self.move_user(gid[0], uid[0], csrf)
                 else:
                     continue
 
@@ -122,6 +131,64 @@ class ChosenTime(UserElement):
         except Exception as e:
             self.logger.error('天选失败，原因：%s' % e)
 
+    def check_group(self):
+        gid = []
+        url_group = "http://api.bilibili.com/x/relation/tags"
+        try:
+            response = requests.get(url_group, headers=self.headers)
+            if response.status_code == 200:
+                data = response.json()
+                if data['code'] == 0:
+                    for i in range(len(data['data'])):
+                        if data['data'][i]['name'] == '天选时刻':
+                            gid.append(data['data'][i]['tagid'])
+                            break
+                        else:
+                            pass
+                    return gid
+                else:
+                    self.logger.info(data)
+            else:
+                self.logger.error('获取信息失败，状态码：%s' % response.status_code)
+        except Exception as e:
+            self.logger.error('获取信息失败，原因：%s' % e)
+
+    def make_group(self, csrf):
+        g_id = []
+        url_make = "http://api.bilibili.com/x/relation/tag/create"
+        try:
+            data = {'tag': '天选时刻', 'csrf': csrf}
+            response = requests.post(url_make, headers=self.headers, data=data)
+            if response.status_code == 200:
+                data2 = response.json()
+                if data2['code'] == 0:
+                    self.logger.info("创建分组成功")
+                    self.logger.info(data2)
+                    g_id.append(data2['data']['tagid'])
+                    return g_id
+                else:
+                    self.logger.info(data2)
+            else:
+                self.logger.error('创建分组失败，状态码：%s' % response.status_code)
+        except Exception as e:
+            self.logger.error('创建分组失败，原因：%s' % e)
+
+    def move_user(self, gid, uid, csrf):
+        url_relationship = "http://api.bilibili.com/x/relation/tags/moveUsers"
+        try:
+            data = {'beforeTagids': 0, 'afterTagids': gid, 'fids': uid, 'csrf': csrf}
+            response = requests.post(url_relationship, headers=self.headers, data=data)
+            if response.status_code == 200:
+                data3 = response.json()
+                if data3['code'] == 0:
+                    self.logger.info("移动成功")
+                else:
+                    self.logger.info(data3)
+            else:
+                self.logger.error('移动失败，状态码：%s' % response.status_code)
+        except Exception as e:
+            self.logger.error('移动失败，原因：%s' % e)
+
     def run(self):
         for i in range(len(self.cookie)):
             self.headers['cookie'] = self.cookie[i]
@@ -132,8 +199,3 @@ class ChosenTime(UserElement):
 if __name__ == '__main__':
     ct = ChosenTime()
     ct.run()
-
-    # a = ct.get_roomId()
-    # ct.cope_roomId(a)
-    # ct.cope_roomId(a)
-    # print(ct.roomId)
