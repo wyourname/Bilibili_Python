@@ -75,7 +75,6 @@ class ChosenTime(UserElement):
         while True:
             time.sleep(random.randint(3, 5))
             page += 1
-            self.logger.info("正在扫描第%s页" % page)
             data2 = self.get_roomId(pid, aid, page)
             if len(data2) == 0:
                 self.logger.info("扫描完毕")
