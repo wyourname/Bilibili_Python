@@ -107,6 +107,12 @@ class Daily(User):
         else:
             self.logger.info(data['message'])
 
+    def cope_DoSign(self, data):  # 接收签到返回数据，处理数据
+        if data['code'] == 0:
+            self.logger.info("直播签到成功 ௹ ✓")
+        else:
+            self.logger.info(data['message'])
+
     def decorate(self):
         self.logger.info("开始每日登录经验+5,一天只能加一次 ☆*: .｡. o(≧▽≦)o .｡.:*☆")
         self.logger.info("开始投币，每次投币5个硬币")
@@ -129,6 +135,8 @@ class Daily(User):
             self.cope_share(share_dynamic)  # 输出分享返回数据
             data = self.get_requests(self.url)  # 获取用户信息,返回数据
             self.receive_message(data)
+            sign = self.DoSign()
+            self.cope_DoSign(sign)
             self.logger.info("================分割线====================")
             if i == len(self.a) - 1:
                 break

@@ -93,3 +93,14 @@ class User(UserElement):
                 self.logger.error("请求失败，状态码为：" + str(response.status_code))
         except Exception as e:
             self.logger.error(e)
+
+    def DoSign(self):
+        try:
+            response = requests.get(self.url8, headers=self.headers)
+            if response.status_code == 200:
+                data = response.json()
+                return data
+            else:
+                self.logger.error("请求失败，状态码为：" + str(response.status_code))
+        except Exception as e:
+            self.logger.error(e)
