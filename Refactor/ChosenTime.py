@@ -125,7 +125,7 @@ class ChosenTime(UserElement):
                 if data4['code'] == 0:
                     self.logger.info("天选成功")
                 else:
-                    self.logger.info(data4)
+                    self.logger.info(data4['message'])
             else:
                 self.logger.error('天选失败，状态码：%s' % response.status_code)
         except Exception as e:
