@@ -88,6 +88,7 @@ class ChosenTime(UserElement):
                     gid = self.check_group()
                     if len(gid) > 0:
                         self.logger.info("存在天选时刻分组，将用户%s移动到天选时刻分组" % uid[0])
+                        time.sleep(random.randint(1,3))
                         self.move_user(gid[0], uid[0], csrf)
                     else:
                         self.logger.info("不存在天选时刻分组，将创建天选时刻分组")
