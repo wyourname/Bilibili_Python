@@ -11,7 +11,6 @@ class ChosenTime(UserElement):
         super().__init__()
         self.cookie = self.fetch_cookies()
         self.csrf = self.fetch_csrf()
-        self.roomId = []
 
     def collect_area(self):
         try:
