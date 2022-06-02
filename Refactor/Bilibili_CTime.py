@@ -83,21 +83,22 @@ class ChosenTime(UserElement):
             else:
                 roomid, uid = self.cope_roomId(data2)
                 if len(roomid) > 0:
-                    rid = self.check_Room(roomid[0])
-                    code = self.TianXuan(roomid[0], rid, csrf)
-                    gid = self.check_group()
-                    if len(gid) > 0:
-                        if code == 0:
-                            self.logger.info("存在天选时刻分组，将用户%s移动到天选时刻分组" % uid[0])
-                            time.sleep(1)
-                            self.move_user(gid[0], uid[0], csrf)
+                    for i in range(len(roomid)):
+                        rid = self.check_Room(roomid[i])
+                        code = self.TianXuan(roomid[i], rid, csrf)
+                        gid = self.check_group()
+                        if len(gid) > 0:
+                            if code == 0:
+                                self.logger.info("存在天选时刻分组，将用户%s移动到天选时刻分组" % uid[i])
+                                time.sleep(1)
+                                self.move_user(gid[0], uid[i], csrf)
+                            else:
+                                continue
                         else:
-                            continue
-                    else:
-                        self.logger.info("不存在天选时刻分组，将创建天选时刻分组")
-                        gid = self.make_group(csrf)
-                        if len(gid) > 0: self.logger.info("创建天选时刻分组成功")
-                        self.move_user(gid[0], uid[0], csrf)
+                            self.logger.info("不存在天选时刻分组，将创建天选时刻分组")
+                            gid = self.make_group(csrf)
+                            if len(gid) > 0: self.logger.info("创建天选时刻分组成功")
+                            self.move_user(gid, uid[i], csrf)
                 else:
                     continue
 
@@ -159,7 +160,6 @@ class ChosenTime(UserElement):
             self.logger.error('获取信息失败，原因：%s' % e)
 
     def make_group(self, csrf):
-        g_id = []
         url_make = "http://api.bilibili.com/x/relation/tag/create"
         try:
             data = {'tag': '天选时刻', 'csrf': csrf}
@@ -168,9 +168,7 @@ class ChosenTime(UserElement):
                 data2 = response.json()
                 if data2['code'] == 0:
                     self.logger.info("创建分组成功")
-                    self.logger.info(data2)
-                    g_id.append(data2['data']['tagid'])
-                    return g_id
+                    return data2['data']['tagid']
                 else:
                     self.logger.info(data2)
             else:
