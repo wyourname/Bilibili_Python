@@ -115,9 +115,8 @@ class Daily(User):
 
     def decorate(self):
         self.logger.info("开始每日登录经验+5,一天只能加一次 ☆*: .｡. o(≧▽≦)o .｡.:*☆")
-        self.logger.info("开始投币，每次投币5个硬币")
-        self.logger.info("开始分享，每次分享1个视频")
-        self.logger.info("一天只需要运行一次，请勿重复运行，以免硬币流失")
+        self.logger.info("开始投币，分享，签到，每次投币5个硬币，分享一次，直播签到")
+        self.logger.info("一天只需要运行一次，请勿重复运行，以免硬币流失，该脚本依据用户关注的up主投币，如果up动态过少会造成无法完成任务")
 
     def run_daily(self):
         self.decorate()
@@ -125,18 +124,21 @@ class Daily(User):
             self.headers['Cookie'] = self.a[i]  # 获取cookies设置到headers中
             data = self.get_requests(self.url)  # 获取用户信息,返回数据
             self.receive_message(data)  # 接收用户信息，处理数据，输出来给我们看
-            dynamic = self.consult_dynamic(self.url2)  # 获取动态信息
-            title, bv = self.cope_dynamic(dynamic)  # 处理动态信息
-            play_data = self.play_video(bv[0], title[0])  # 播放视频
-            self.cope_play_video(play_data)  # 处理播放视频返回数据
-            self.start_drop_coin(title, bv, self.csrf[i])  # 投币函数,输出视频标题和bv信息
-            a = random.randint(0, len(bv)-1)
-            share_dynamic = self.share_dynamic(bv[a], title[a], self.csrf[i])  # 分享动态，只分享第一个视频
-            self.cope_share(share_dynamic)  # 输出分享返回数据
-            data = self.get_requests(self.url)  # 获取用户信息,返回数据
-            self.receive_message(data)
             sign = self.DoSign()
             self.cope_DoSign(sign)
+            dynamic = self.consult_dynamic(self.url2)  # 获取动态信息
+            title, bv = self.cope_dynamic(dynamic)  # 处理动态信息
+            if len(bv) > 0:
+                play_data = self.play_video(bv[0], title[0])  # 播放视频
+                self.cope_play_video(play_data)  # 处理播放视频返回数据
+                self.start_drop_coin(title, bv, self.csrf[i])  # 投币函数,输出视频标题和bv信息
+                a = random.randint(0, len(bv)-1)
+                share_dynamic = self.share_dynamic(bv[a], title[a], self.csrf[i])  # 分享动态，只分享第一个视频
+                self.cope_share(share_dynamic)  # 输出分享返回数据
+            else:
+                self.logger.info("动态过少，关注多几个up主，比如我：猫三骂骂咧咧的说，再来运行吧")
+            data = self.get_requests(self.url)  # 获取用户信息,返回数据
+            self.receive_message(data)
             self.logger.info("================分割线====================")
             if i == len(self.a) - 1:
                 break
