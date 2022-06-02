@@ -89,6 +89,7 @@ class ChosenTime(UserElement):
                     if len(gid) > 0:
                         if code == 0:
                             self.logger.info("存在天选时刻分组，将用户%s移动到天选时刻分组" % uid[0])
+                            time.sleep(1)
                             self.move_user(gid[0], uid[0], csrf)
                         else:
                             continue
