@@ -5,7 +5,7 @@
 可以关注我B站uid：289549318
 有建议的功能可以告诉我我尽量加上
 新手，不喜勿喷
-## 注意：拉要四个py文件一个config.json 在青龙之需要挂着Bilibili_daily.py和Bilibili_CT.py(一个任务，一个天选，取关还没写)
+## 注意：拉要四个py文件一个config.json 在青龙之需要挂着Bilibili_Daily.py和Bilibili_CT.py(一个任务，一个天选，取关还没写)
 
 6.2 修改了文件名称，小bug依旧没修复
 
