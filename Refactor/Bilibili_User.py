@@ -27,7 +27,8 @@ class UserElement:
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-site",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                          "Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47 "
+                          "Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47 ",
+            "connection": "close"
         }
 
         self.url = "https://api.bilibili.com/x/web-interface/nav"
