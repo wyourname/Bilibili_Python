@@ -122,7 +122,7 @@ class Daily(User):
         self.decorate()
         for i in range(len(self.a)):
             self.headers['Cookie'] = self.a[i]  # 获取cookies设置到headers中
-            data = self.get_requests(self.url)  # 获取用户信息,返回数据
+            data = self.get_requests()  # 获取用户信息,返回数据
             self.receive_message(data)  # 接收用户信息，处理数据，输出来给我们看
             sign = self.DoSign()
             self.cope_DoSign(sign)

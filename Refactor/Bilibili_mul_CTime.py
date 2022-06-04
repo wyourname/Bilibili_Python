@@ -100,9 +100,10 @@ class ChosenTime(UserElement):
                         else:
                             self.logger.info("不存在天选时刻分组，将创建天选时刻分组")
                             gid = self.make_group(csrf)
-                            if len(gid) > 0: self.logger.info("创建天选时刻分组成功")
-                            time.sleep(1)
-                            self.move_user(gid, uid[i], csrf)
+                            if gid > 0:
+                                self.logger.info("创建天选时刻分组成功")
+                                time.sleep(1)
+                                self.move_user(gid, uid[i], csrf)
                 else:
                     continue
 

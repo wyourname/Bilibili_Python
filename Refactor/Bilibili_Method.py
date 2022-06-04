@@ -10,9 +10,9 @@ class User(UserElement):
         self.a = self.fetch_cookies()  # 获取cookies 顺序不可以调动
         self.b = self.fetch_csrf()  # 获取csrf 顺序不可以调动
 
-    def get_requests(self, url):
+    def get_requests(self):
         try:
-            response = requests.get(url, headers=self.headers)
+            response = requests.get(self.url, headers=self.headers)
             if response.status_code == 200:
                 data = response.json()
                 if data['code'] == 0:
