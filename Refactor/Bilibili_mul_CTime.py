@@ -58,7 +58,6 @@ class ChosenTime(UserElement):
             if page > self.max_page:
                 self.logger.info("页面到达设置的最大页数，结束扫描")
                 break
-            self.logger.info('      ->正在扫描第%s页' % page)
             data3 = self.scanner_page(parents_id, child_id, page)
             if data3:
                 self.scan_page_room(data3, csrf)
