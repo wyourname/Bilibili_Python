@@ -137,7 +137,7 @@ class Daily(User):
                 self.cope_share(share_dynamic)  # 输出分享返回数据
             else:
                 self.logger.info("动态过少，关注多几个up主，比如我：猫三骂骂咧咧的说，再来运行吧")
-            data = self.get_requests(self.url)  # 获取用户信息,返回数据
+            data = self.get_requests()  # 获取用户信息,返回数据
             self.receive_message(data)
             self.logger.info("================分割线====================")
             if i == len(self.a) - 1:
