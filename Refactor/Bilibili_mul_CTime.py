@@ -202,9 +202,9 @@ class ChosenTime(UserElement):
             self.logger.error('移动失败，原因：%s' % e)
 
     def run(self):
-        self.logger.info('开始执行')
+        self.logger.info('-------开始执行--------')
         for i in range(len(self.csrf)):
-            self.logger.info('开始执行帐号%s' % (i + 1))
+            self.logger.info('------》开始执行帐号%s' % (i + 1))
             self.headers['Cookie'] = self.cookie[i]
             data = self.collect_area()
             self.cope_area(data, self.csrf[i])
