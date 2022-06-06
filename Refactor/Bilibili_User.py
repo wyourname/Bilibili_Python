@@ -27,8 +27,7 @@ class UserElement:
             "sec-fetch-mode": "cors",
             "sec-fetch-site": "same-site",
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                          "Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47 ",
-            "connection": "close"
+                          "Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47 "
         }
 
         self.url = "https://api.bilibili.com/x/web-interface/nav"
@@ -40,19 +39,22 @@ class UserElement:
         self.url6 = "http://api.bilibili.com/x/click-interface/web/heartbeat"
         self.url7 = "http://api.live.bilibili.com/room/v1/Area/getList"
         self.url8 = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
+        self.url9 = "http://api.bilibili.com/x/relation/tags"
+        self.url10 = "http://api.bilibili.com/x/relation/tag"
         self.User_Cookie = []
         self.csrf = []
+        self.Num = []
         logging.basicConfig(level=logging.INFO, format='%(message)s')
         self.logger = logging.getLogger(__name__)
 
     def fetch_cookies(self):
         try:
-            with open('./Bilibili_config.json', 'r', encoding='utf-8') as f:
+            with open('Bilibili_config.json', 'r', encoding='utf-8') as f:
                 ck = json.load(f)
                 for i in range(len(ck['Users'])):
                     self.User_Cookie.append(ck['Users'][i]['Cookie'])
         except Exception as e:
-            self.logger.info("请检查config文件路径是否存在或者文件是否正确，文件应该与当前文件在同一目录下")
+            self.logger.info("请检查文件路径是否存在或者文件是否正确，文件应该与当前文件在同一目录下")
             self.logger.error(e)
         return self.User_Cookie
 
@@ -69,6 +71,17 @@ class UserElement:
         except Exception as e:
             self.logger.info("请检查你的cookie是否正确 " + str(e))
         return self.csrf
+
+    def fetch_num(self):
+        try:
+            with open('Bilibili_config.json', 'r', encoding='utf-8') as f:
+                Num = json.load(f)
+                for i in range(len(Num['Unfollows'])):
+                    self.Num.append(Num['Unfollows'][i]['number'])
+        except Exception as e:
+            self.logger.info("请检查文件路径是否存在或者文件是否正确，文件应该与当前文件在同一目录下")
+            self.logger.error(e)
+        return self.Num
 
     def fetch_page(self):
         try:
