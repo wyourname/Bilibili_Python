@@ -8,5 +8,7 @@
     {
       "number": 1
     }
-  ]
+  ],
+  "max_page": 100,
+  "max_thread": 1
 }
