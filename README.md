@@ -7,6 +7,9 @@
 新手，不喜勿喷，不喜欢用觉得垃圾可以不用，不用骂我垃圾，写的垃圾是学艺不精ok
 ## 注意：拉要5个py文件一个config.json 在青龙之需要挂着Bilibili_Daily.py和Bilibili_CT.py(一个任务，一个天选，一个取关) 感兴趣可以给我点个star
 
+6.6 删除原来的天选，新的配置，线程可设置1到7，最好就是3避免并发冲突，代码重构了一部分，可设置最大扫描页数 如图 ![image](https://user-images.githubusercontent.com/63834404/172145153-d9772e37-55df-4455-b6e3-e616fdc32469.png)
+
+
 6.4 新增取关up主，配置文件更新，在refactor里看，需要取关多少就写多少，多账户同cookie格式填两个num 如图![image](https://user-images.githubusercontent.com/63834404/171981480-0dff8dea-f96f-4aef-82e0-7e85e333de39.png)
 
 
