@@ -1,7 +1,8 @@
 import random
 import time
 import requests
-from concurrent.futures import ThreadPoolExecutor
+import sys
+from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 from Bilibili_User import *
 
 
@@ -22,7 +23,7 @@ class ChosenTime(UserElement):
         try:
             response = requests.get(self.url7, headers=self.headers)
             if response.status_code == 200:
-                data1 = response.json()['data']
+                data1 = json.loads(response.text)['data']
                 return data1
             else:
                 self.logger.error('获取全部直播分区失败，状态码：%s' % response.status_code)
@@ -30,12 +31,13 @@ class ChosenTime(UserElement):
             self.logger.error('获取全部直播分区失败，原因：%s' % e)
 
     def cope_area(self, data1, csrf):  # 这里是核心分区的扫描
+        tasklist = []
         for i in data1:
             self.logger.info('--------->正在扫描《' + i['name'] + "》<---------")
             data_id, data_name = self.cope_min_area(i['list'])
-            self.pool.submit(self.cycle, i['id'], data_id, data_name, csrf)
-        self.pool.shutdown(wait=True)
-        self.logger.info('--------->程序结束<---------')
+            task = self.pool.submit(self.cycle, i['id'], data_id, data_name, csrf)
+            tasklist.append(task)
+        return tasklist
 
     @staticmethod
     def cope_min_area(data1):
@@ -50,6 +52,7 @@ class ChosenTime(UserElement):
         for i in child_id:
             self.logger.info('      ->正在扫描' + child_title[child_id.index(i)] + "<-")
             self.cycle_page(parents_id, i, csrf)
+            time.sleep(1)
 
     def cycle_page(self, parents_id, child_id, csrf):
         page = 0
@@ -63,7 +66,7 @@ class ChosenTime(UserElement):
                 self.scan_page_room(data3, csrf)
             else:
                 break
-            time.sleep(1)
+            time.sleep(random.randint(1, 3))
 
     def scanner_page(self, parents_id, child_id, page):  # 搜寻子分区的直播间
         try:
@@ -71,7 +74,7 @@ class ChosenTime(UserElement):
                      "=%s&area_id=%s&page=%s" % (parents_id, child_id, page)
             response = requests.get(url_ct, headers=self.headers)
             if response.status_code == 200:
-                data3 = response.json()['data']['list']
+                data3 = json.loads(response.text)['data']['list']
                 return data3
             else:
                 self.logger.error('获取第%s的%s页直播间信息失败，状态码：%s' % (child_id, page, response.status_code))
@@ -101,9 +104,9 @@ class ChosenTime(UserElement):
         try:
             response = requests.get(url_check, headers=self.headers)
             if response.status_code == 200:
-                data3 = response.json()
+                data3 = json.loads(response.text)
                 if data3['code'] == 0:
-                    self.logger.info("奖品是：%s,数量为：%s,需要条件：%s" % (
+                    self.logger.info("【奖品】是：%s,数量为：%s,【需要条件】：%s" % (
                         data3['data']['award_name'], data3['data']['award_num'], data3['data']['require_text']))
                     self.TX(data3['data']['id'], roomid, uid, csrf)
                 else:
@@ -119,11 +122,11 @@ class ChosenTime(UserElement):
             data = {'id': rid, 'platfrom': 'pc', 'roomid': roomid, 'csrf': csrf}
             response = requests.post(url_tx, headers=self.headers, data=data)
             if response.status_code == 200:
-                data4 = response.json()
+                data4 = json.loads(response.text)
                 if data4['code'] == 0:
                     if data4['message'] == '':
-                        self.logger.info("参与天选成功")
-                        time.sleep(1)
+                        self.logger.info("【参与天选成功】")
+                        time.sleep(random.randint(2, 3))
                         self.control_user(uid, csrf)
                     else:
                         self.logger.info(data4['message'])
@@ -153,7 +156,7 @@ class ChosenTime(UserElement):
         try:
             response = requests.get(url_group, headers=self.headers)
             if response.status_code == 200:
-                data = response.json()
+                data = json.loads(response.text)
                 if data['code'] == 0:
                     for i in range(len(data['data'])):
                         if data['data'][i]['name'] == '天选时刻':
@@ -173,7 +176,7 @@ class ChosenTime(UserElement):
             data = {'tag': '天选时刻', 'csrf': csrf}
             response = requests.post(url_make, headers=self.headers, data=data)
             if response.status_code == 200:
-                data2 = response.json()
+                data2 = json.loads(response.text)
                 if data2['code'] == 0:
                     self.logger.info("创建分组成功")
                     return data2['data']['tagid']
@@ -190,7 +193,7 @@ class ChosenTime(UserElement):
             data = {'beforeTagids': 0, 'afterTagids': gid, 'fids': uid, 'csrf': csrf}
             response = requests.post(url_relationship, headers=self.headers, data=data)
             if response.status_code == 200:
-                data3 = response.json()
+                data3 = json.loads(response.text)
                 if data3['code'] == 0:
                     self.logger.info("移动成功")
                 else:
@@ -201,15 +204,18 @@ class ChosenTime(UserElement):
             self.logger.error('移动失败，原因：%s' % e)
 
     def run(self):
-        self.logger.info('-------开始执行--------')
-        for i in range(len(self.csrf)):
-            self.logger.info('------》开始执行帐号%s' % (i + 1))
-            self.headers['Cookie'] = self.cookie[i]
+        self.logger.info('============开始执行==============')
+        for i in range(len(self.cookie)):
+            self.logger.info("***********正在执行第%s个账号**********" % (i+1))
+            self.headers["cookie"] = self.cookie[i]
             data = self.collect_area()
-            self.cope_area(data, self.csrf[i])
+            tasklist = self.cope_area(data, csrf=self.csrf[i])
+            wait(tasklist, return_when=ALL_COMPLETED)
+        self.pool.shutdown()
+        self.logger.info("😁😰😰😰😰😰😰😰😰程序结束😰😰😰😰😰😰😰😰😰😰")
+        sys.exit(0)
 
 
 if __name__ == '__main__':
     ct = ChosenTime()
     ct.run()
-
