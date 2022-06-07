@@ -8,7 +8,7 @@
 会青龙拉库命令的可以告诉我我还不会配置😂
 ## 注意：拉要5个py文件一个config.json 在青龙之需要挂着Bilibili_Daily.py和Bilibili_CT.py(一个任务，一个天选，一个取关) 感兴趣可以给我点个star
 
-6.7 修复了天选部分bug,新增bug
+6.7 修复了天选部分bug,新增bug，待会更新daily bug
 
 6.6 删除原来的天选，新的配置，线程可设置1到7，最好就是3避免并发冲突，代码重构了一部分，可设置最大扫描页数 如图 ![image](https://user-images.githubusercontent.com/63834404/172145153-d9772e37-55df-4455-b6e3-e616fdc32469.png)
 
