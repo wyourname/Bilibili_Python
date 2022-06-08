@@ -8,6 +8,10 @@
 会青龙拉库命令的可以告诉我我还不会配置😂
 ## 注意：拉要5个py文件一个config.json 在青龙之需要挂着Bilibili_Daily.py和Bilibili_CT.py(一个任务，一个天选，一个取关) 感兴趣可以给我点个star
 
+6.8 新配置，可自定义每个视频投币数量 1-2之间 ，每个py都可运行，user可查看cookie是否读出来，method可查看cookie有效 多账户如图：
+![image](https://user-images.githubusercontent.com/63834404/172532745-ecf9e95d-2ec7-4b4a-a1d5-a19a058c0078.png)
+
+
 6.7 修复了天选部分bug,新增bug，待会更新daily bug
 
 6.6 删除原来的天选，新的配置，线程可设置1到7，最好就是3避免并发冲突，代码重构了一部分，可设置最大扫描页数 如图 ![image](https://user-images.githubusercontent.com/63834404/172145153-d9772e37-55df-4455-b6e3-e616fdc32469.png)
