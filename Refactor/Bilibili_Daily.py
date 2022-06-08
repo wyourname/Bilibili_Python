@@ -40,13 +40,13 @@ class CopeMethod(DailyMethod):
             recommend = self.get_requests(url)
             re_title, re_bv = self.cope_recommend(recommend)
             for j in range(5 - len(bv)):
-                self.logger.info('开始投币于推荐视频，标题%s' % re_title[j])
+                self.logger.info('开始投币于推荐视频，标题: %s' % re_title[j])
                 self.drop_coin(re_bv[j], num, csrf)
                 time.sleep(1)
             return True
         elif len(bv) >= 5 and (num == 1 or num == 2):
             for i in range(len(bv)):
-                self.logger.info('开始投币，标题%s' % title[i])
+                self.logger.info('开始投币，标题:%s' % title[i])
                 self.drop_coin(bv[i], num, csrf)
                 if i == 4:
                     self.logger.info('投币数量到达5个，结束投币')
@@ -100,7 +100,7 @@ class CopeMethod(DailyMethod):
             "bvid": bv,
             "csrf": csrf
         }
-        self.logger.info('开始分享动态，标题%s' % title)
+        self.logger.info('开始分享动态，标题: %s' % title)
         share = self.post_requests(self.url4, data)
         self.cope_share_dynamic(share)
 
@@ -120,7 +120,7 @@ class CopeMethod(DailyMethod):
             "play_time": random.randint(30, 45),
             "realtime": random.randint(30, 45)
         }
-        self.logger.info('开始播放视频，标题%s' % title)
+        self.logger.info('开始播放视频，标题: %s' % title)
         play = self.post_requests(self.url6, data)
         self.cope_play_video(play)
 
@@ -165,7 +165,7 @@ class CopeMethod(DailyMethod):
                 self.logger.info('没有可分享的动态')
                 self.logger.info('也没有可播放的视频')
             self.logger.info('第%s个帐号结束' % (i + 1))
-        self.logger.info('😎😎😎😎😎😎😎😎😎😎😎全部结束😎😎😎😎😎😎😎😎😎😎😎')
+        self.logger.info('😎😎😎😎😎😎😎😎😎😎😎全部结束😎😎😎😎😎😎😎😎😎😎')
 
 
 if __name__ == '__main__':
