@@ -2,7 +2,7 @@ from Bilibili_Daily import *
 import requests
 
 
-class Unfollows(Daily):
+class Unfollows(DailyMethod):
     def __init__(self):
         super().__init__()
         self.Number = self.fetch_num()
@@ -79,18 +79,18 @@ class Unfollows(Daily):
         self.logger.info('本脚本依赖于Bilibili_Daily.py，确保文件在同一目录下')
         self.logger.info('脚本为取关天选时刻分组的up主')
         self.logger.info("💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕")
-        for i in range(len(self.a)):
-            self.headers['cookie'] = self.a[i]
-            data = self.get_requests()
-            self.receive_message(data)
+        for i in range(len(self.cookies)):
+            self.headers['cookie'] = self.cookies[i]
+            data = self.get_requests(self.url)
+            self.cope_info(data)
             tagid = self.check_group()
             if tagid is not None:
                 mids = self.collect_mid(tagid)
-                self.unfollow(self.Number[i], mids, self.b[i])
+                self.unfollow(self.Number[i], mids, self.csrfs[i])
             else:
                 print('没有天选时刻分组')
                 continue
-        self.logger.info("=========》算了，不恶心你们了，啊哈哈哈哈，结束《=========")
+        self.logger.info("=============》结束《============")
 
 
 if __name__ == '__main__':
