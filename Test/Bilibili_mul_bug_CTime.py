@@ -23,9 +23,7 @@ class ChosenTime(UserElement):
         try:
             response = requests.get(self.url7, headers=self.headers)
             if response.status_code == 200:
-                self.logger.info(response.text)
                 data1 = json.loads(response.text)['data']
-                self.logger.info(data1)
                 return data1
             else:
                 self.logger.error('获取全部直播分区失败，状态码：%s' % response.status_code)
@@ -71,19 +69,14 @@ class ChosenTime(UserElement):
             time.sleep(random.randint(1, 3))
 
     def scanner_page(self, parents_id, child_id, page):  # 搜寻子分区的直播间
-        try:
-            url_ct = "https://api.live.bilibili.com/xlive/web-interface/v1/second/getList?platform=web&parent_area_id" \
-                     "=%s&area_id=%s&page=%s" % (parents_id, child_id, page)
-            response = requests.get(url_ct, headers=self.headers)
-            if response.status_code == 200:
-                self.logger.info(response.text)
-                data3 = json.loads(response.text)['data']['list']
-                self.logger.info(data3)
-                return data3
-            else:
-                self.logger.error('获取第%s的%s页直播间信息失败，状态码：%s' % (child_id, page, response.status_code))
-        except Exception as e:
-            self.logger.error('获取第%s的%s页直播间信息失败，原因：%s' % (child_id, page, e))
+        url_ct = "https://api.live.bilibili.com/xlive/web-interface/v1/second/getList?platform=web&parent_area_id" \
+                 "=%s&area_id=%s&page=%s" % (parents_id, child_id, page)
+        response = requests.get(url_ct, headers=self.headers)
+        if response.status_code == 200:
+            data3 = json.loads(response.text)['data']['list']
+            return data3
+        else:
+            self.logger.error('获取第%s的%s页直播间信息失败，状态码：%s' % (child_id, page, response.status_code))
 
     def scan_page_room(self, data3, csrf):
         for i in data3:
@@ -105,37 +98,31 @@ class ChosenTime(UserElement):
 
     def check_Room(self, roomid, uid, csrf):
         url_check = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/Check?roomid=%s" % roomid
-        try:
-            response = requests.get(url_check, headers=self.headers)
-            if response.status_code == 200:
-                self.logger.info(response.text)
-                data3 = json.loads(response.text)
-                self.logger.info(data3)
-                if data3['code'] == 0:
-                    self.logger.info("【奖品】是：%s,数量为：%s,【需要条件】：%s" % (
-                        data3['data']['award_name'], data3['data']['award_num'], data3['data']['require_text']))
-                    self.TX(data3['data']['id'], roomid, uid, csrf)
-                else:
-                    self.logger.info(data3)
+        response = requests.get(url_check, headers=self.headers)
+        if response.status_code == 200:
+            data3 = json.loads(response.text)
+            if data3['code'] == 0:
+                self.logger.info("【奖品】是：%s,数量为：%s,【需要条件】：%s" % (
+                    data3['data']['award_name'], data3['data']['award_num'], data3['data']['require_text']))
+                self.TX(data3['data']['id'], roomid, uid, csrf)
             else:
-                self.logger.error('检查房间信息失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('检查房间信息失败，原因：%s' % e)
+                self.logger.info(data3)
+        else:
+            self.logger.error('检查房间信息失败，状态码：%s' % response.status_code)
 
     def TX(self, rid, roomid, uid, csrf):
         url_tx = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/Join"
         data = {'id': rid, 'platfrom': 'pc', 'roomid': roomid, 'csrf': csrf}
         response = requests.post(url_tx, headers=self.headers, data=data)
         if response.status_code == 200:
-            self.logger.info(response.text)
             data4 = json.loads(response.text)
-            self.logger.info(data4)
             if data4['code'] == 0:
                 if data4['message'] == '':
                     self.logger.info("【参与天选成功】")
                     time.sleep(random.randint(2, 3))
                     self.control_user(uid, csrf)
                 else:
+                    self.logger.info(data4)
                     self.logger.info(data4['message'])
             else:
                 self.logger.info(data4['message'])
@@ -158,66 +145,51 @@ class ChosenTime(UserElement):
 
     def check_group(self):
         url_group = "http://api.bilibili.com/x/relation/tags"
-        try:
-            response = requests.get(url_group, headers=self.headers)
-            if response.status_code == 200:
-                self.logger.info(response.text)
-                data = json.loads(response.text)
-                self.logger.info(data)
-                if data['code'] == 0:
-                    for i in range(len(data['data'])):
-                        if data['data'][i]['name'] == '天选时刻':
-                            return data['data'][i]['tagid']
-                        else:
-                            pass
-                else:
-                    self.logger.error(data)
+        response = requests.get(url_group, headers=self.headers)
+        if response.status_code == 200:
+            data = json.loads(response.text)
+            if data['code'] == 0:
+                for i in range(len(data['data'])):
+                    if data['data'][i]['name'] == '天选时刻':
+                        return data['data'][i]['tagid']
+                    else:
+                        pass
             else:
-                self.logger.error('获取信息失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('获取信息失败，原因：%s' % e)
+                self.logger.error(data)
+        else:
+            self.logger.error('获取信息失败，状态码：%s' % response.status_code)
 
     def create_group(self, csrf):
         url_make = "http://api.bilibili.com/x/relation/tag/create"
-        try:
-            data = {'tag': '天选时刻', 'csrf': csrf}
-            response = requests.post(url_make, headers=self.headers, data=data)
-            if response.status_code == 200:
-                self.logger.info(response.text)
-                data2 = json.loads(response.text)
-                self.logger.info(data2)
-                if data2['code'] == 0:
-                    self.logger.info("创建分组成功")
-                    return data2['data']['tagid']
-                else:
-                    self.logger.error(data2)
+        data = {'tag': '天选时刻', 'csrf': csrf}
+        response = requests.post(url_make, headers=self.headers, data=data)
+        if response.status_code == 200:
+            data2 = json.loads(response.text)
+            if data2['code'] == 0:
+                self.logger.info("创建分组成功")
+                return data2['data']['tagid']
             else:
-                self.logger.error('创建分组失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('创建分组失败，原因：%s' % e)
+                self.logger.error(data2)
+        else:
+            self.logger.error('创建分组失败，状态码：%s' % response.status_code)
 
     def move_user(self, gid, uid, csrf):
         url_relationship = "http://api.bilibili.com/x/relation/tags/moveUsers"
-        try:
-            data = {'beforeTagids': 0, 'afterTagids': gid, 'fids': uid, 'csrf': csrf}
-            response = requests.post(url_relationship, headers=self.headers, data=data)
-            if response.status_code == 200:
-                self.logger.info(response.text)
-                data3 = json.loads(response.text)
-                self.logger.info(data3)
-                if data3['code'] == 0:
-                    self.logger.info("移动成功")
-                else:
-                    self.logger.error(data3)
+        data = {'beforeTagids': 0, 'afterTagids': gid, 'fids': uid, 'csrf': csrf}
+        response = requests.post(url_relationship, headers=self.headers, data=data)
+        if response.status_code == 200:
+            data3 = json.loads(response.text)
+            if data3['code'] == 0:
+                self.logger.info("移动成功")
             else:
-                self.logger.error('移动失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('移动失败，原因：%s' % e)
+                self.logger.error(data3)
+        else:
+            self.logger.error('移动失败，状态码：%s' % response.status_code)
 
     def run(self):
         self.logger.info('============开始执行==============')
         for i in range(len(self.cookie)):
-            self.logger.info("***********正在执行第%s个账号**********" % (i+1))
+            self.logger.info("***********正在执行第%s个账号**********" % (i + 1))
             self.headers["cookie"] = self.cookie[i]
             data = self.collect_area()
             tasklist = self.cope_area(data, csrf=self.csrf[i])
