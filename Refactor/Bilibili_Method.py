@@ -1,106 +1,63 @@
+import json
+from Bilibili_User import UserElement
+import requests
 import random
 
-import requests
-from Bilibili_User import *
 
-
-class User(UserElement):
+class DailyMethod(UserElement):
     def __init__(self):
         super().__init__()
-        self.a = self.fetch_cookies()  # 获取cookies 顺序不可以调动
-        self.b = self.fetch_csrf()  # 获取csrf 顺序不可以调动
+        self.cookies = self.fetch_cookies()
+        self.csrfs = self.fetch_csrf()
+        self.coin = self.fetch_drop_coin()
 
-    def get_requests(self):
+    def get_requests(self, url):
         try:
-            response = requests.get(self.url, headers=self.headers)
+            response = requests.get(url, headers=self.headers, timeout=5)
             if response.status_code == 200:
-                data = response.json()
-                if data['code'] == 0:
-                    return data
+                get_data = json.loads(response.text)
+                return get_data
             else:
-                self.logger.error("请求失败，状态码为：" + str(response.status_code))
+                self.logger.error('请求失败，状态码：{}'.format(response.status_code))
+                return None
         except Exception as e:
-            self.logger.error(e)
+            self.logger.error('请求失败，错误信息：{}'.format(e))
 
-    def drop_coin(self, bvid, csrf):
-        data_bv = {
-            'bvid': bvid,
-            'multiply': 1,
-            'csrf': csrf
-        }
+    def post_requests(self, url, data):
         try:
-            response = requests.post(self.url3, headers=self.headers, data=data_bv)
+            response = requests.post(url, headers=self.headers, data=data, timeout=5)
             if response.status_code == 200:
-                data = response.json()
-                return data
+                post_data = json.loads(response.text)
+                return post_data
             else:
-                self.logger.error("请求失败，状态码为：" + str(response.status_code))
+                self.logger.error('请求失败，状态码：{}'.format(response.status_code))
+                return None
         except Exception as e:
-            self.logger.error(e)
+            self.logger.error('请求失败，错误信息：{}'.format(e))
 
-    def consult_dynamic(self, url):  # 获取个人动态，为投币任务做准备返回个人动态数据
-        try:
-            response = requests.get(url, headers=self.headers)
-            if response.status_code == 200:
-                dynamic = response.json()
-                return dynamic
-            else:
-                self.logger.error("请求失败，状态码为：" + str(response.status_code))
-        except Exception as e:
-            self.logger.error(e)
+    def cope_info(self, data):
+        if data['code'] == 0:
+            self.logger.info("**********" + data['data']['uname'] + "**********")
+            self.logger.info("当前经验值：" + str(data['data']['level_info']['current_exp']))
+            level_day = (data['data']['level_info']['next_exp'] - data['data']['level_info']['current_exp']) / 65
+            self.logger.info('当前硬币数：' + str(data['data']['money']) + "，下一等级升级天数约" + str(int(level_day)))
+        elif data['code'] == -101:
+            self.logger.info(data['message'] + "请检查cookie")
+        elif data['code'] == -111:
+            self.logger.info(data['message'] + "请检查csrf")
+        else:
+            self.logger.info(data['message'])
 
-    def share_dynamic(self, bv, title, csrf):  # 分享动态
-        data = {
-            "bvid": bv,
-            "csrf": csrf
-        }
-        try:
-            response = requests.post(self.url4, headers=self.headers, data=data)
-            if response.status_code == 200:
-                data_share = response.json()
-                self.logger.info("分享：" + title)
-                return data_share
-            else:
-                self.logger.error("请求失败，状态码为：" + str(response.status_code))
-        except Exception as e:
-            self.logger.error(e)
+    def user_info(self):
+        self.logger.info("**********用户信息**********")
+        self.logger.info("该脚本为验证你的cookie是否有效，如果cookie无效，请检查cookie是否过期")
+        self.logger.info("脚本包含了日常任务函数，如果你不需要日常任务，请删除该脚本和Bilibili_Daily.py文件")
+        for i in range(len(self.cookies)):
+            self.headers['Cookie'] = self.cookies[i]
+            user = self.get_requests(self.url)
+            self.cope_info(user)
 
-    def recommend(self, bv):
-        url = self.url5 + "?bvid=" + bv
-        try:
-            response = requests.get(url, headers=self.headers)
-            if response.status_code == 200:
-                data = response.json()
-                return data
-            else:
-                self.logger.error("请求失败，状态码为：" + str(response.status_code))
-        except Exception as e:
-            self.logger.error(e)
 
-    def play_video(self, bv, title):
-        data = {
-            "bvid": bv,
-            "play_time": random.randint(30, 45),
-            "realtime": random.randint(30, 45)
-        }
-        try:
-            response = requests.post(self.url6, headers=self.headers, data=data)
-            if response.status_code == 200:
-                data = response.json()
-                self.logger.info("播放：" + title)
-                return data
-            else:
-                self.logger.error("请求失败，状态码为：" + str(response.status_code))
-        except Exception as e:
-            self.logger.error(e)
-
-    def DoSign(self):
-        try:
-            response = requests.get(self.url8, headers=self.headers)
-            if response.status_code == 200:
-                data = response.json()
-                return data
-            else:
-                self.logger.error("请求失败，状态码为：" + str(response.status_code))
-        except Exception as e:
-            self.logger.error(e)
+if __name__ == '__main__':
+    cope = DailyMethod()
+    cope.user_info()

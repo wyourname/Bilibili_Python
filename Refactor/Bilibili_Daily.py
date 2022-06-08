@@ -1,66 +1,70 @@
 import time
+
 from Bilibili_Method import *
 
 
-class Daily(User):
+class CopeMethod(DailyMethod):
     def __init__(self):
         super().__init__()
 
-    def receive_message(self, data_get):  # 接受get_requests返回的数据,并筛选处理
-        if data_get['code'] == 0:
-            self.logger.info("-------->" + data_get['data']['uname'] + "<--------")
-            self.logger.info(
-                data_get['data']['uname'] + " 当前经验值为：" + str(data_get['data']['level_info']['current_exp']))
-            self.logger.info(data_get['data']['uname'] + " 当前硬币数为：" + str(data_get['data']['money']))
-        elif data_get['code'] == -101:
-            self.logger.info(data_get['message'] + "请检查cookie")
-        elif data_get['code'] == -111:
-            self.logger.info(data_get['message'] + "请检查csrf")
-        else:
-            self.logger.info(data_get['message'])
-
-    def cope_dynamic(self, dynamic):  # 接收动态数据，筛选视频bv和title
+    def cope_dynamic(self, data):
         title = []
         bv = []
-        if dynamic['code'] == 0:
-            for i in range(len(dynamic['data']['items'])):
-                if dynamic['data']['items'][i]['basic']['comment_type'] == 1:
-                    if dynamic['data']['items'][i]['modules']['module_dynamic']['major']['type'] == 'MAJOR_TYPE_ARCHIVE':
-                        title.append(
-                            dynamic['data']['items'][i]['modules']['module_dynamic']['major']['archive']['title'])
-                        bv.append(dynamic['data']['items'][i]['modules']['module_dynamic']['major']['archive']['bvid'])
-                    else:
-                        continue
+        if data['code'] == 0:
+            for i in data['data']['items']:
+                if i['basic']['comment_type'] == 1:
+                    if i['modules']['module_dynamic']['major']['type'] == 'MAJOR_TYPE_ARCHIVE':
+                        title.append(i['modules']['module_dynamic']['major']['archive']['title'])
+                        bv.append(i['modules']['module_dynamic']['major']['archive']['bvid'])
+                else:
+                    pass
             return title, bv
-        elif dynamic['code'] == -101:
-            self.logger.info(dynamic['message'] + "请检查cookie")
+        elif data['code'] == -101:
+            self.logger.info(data['message'] + "请检查cookie")
         else:
-            self.logger.info(dynamic['message'])
+            self.logger.info(data['message'])
 
-    def start_drop_coin(self, title, bv, csrf):  # 开始投币
-        final_bv = list(set(bv))
-        final_title = list(set(title))
-        for i in range(len(final_bv)):
-            if len(final_bv) >= 5:
-                self.logger.info("视频标题：" + final_title[i] + "，视频bv：" + final_bv[i])
-                data = self.drop_coin(final_bv[i], csrf)  # 打赏视频
-                self.cope_drop_coin(data)
-            else:
-                self.logger.info("视频标题：" + final_title[i] + "，视频bv：" + final_bv[i])
-                data = self.drop_coin(final_bv[i], csrf)  # 打赏视频
-                self.cope_drop_coin(data)
-                if i == len(final_bv) - 1:
-                    self.logger.info("已经投币" + str(len(final_bv)) + "个视频，不足5次跳转推荐视频投币")
-                    for j in range(5 - len(final_bv)):
-                        recommend_data = self.recommend(final_bv[0])  # 推荐视频
-                        title_re, bv_re = self.cope_recommend(recommend_data)  # 接收推荐视频数据
-                        self.logger.info("视频标题：" + title_re[j] + "，视频bv：" + bv_re[j])
-                        data = self.drop_coin(bv_re[j], csrf)  # 打赏视频
-                        self.cope_drop_coin(data)
-            if i == 4:
-                self.logger.info("视频数量到5,到此结束")
-                break
-            time.sleep(random.randint(3, 5))
+    def check_bv_num(self, bv, title, num, csrf):
+        if len(bv) == 0:
+            self.logger.info('没有发现可投币视频，多关注几个人吧')
+            return False
+        elif 1 <= len(bv) < 5 and (num == 1 or num == 2):
+            self.logger.info('可投币视频数量%s，开始投币,不足5个投币给推荐视频' % len(bv))
+            a = random.randint(0, len(bv) - 1)
+            self.logger.info('可投币视频数量%s，开始投币' % len(bv))
+            for i in range(len(bv)):
+                self.logger.info('开始投币，标题%s' % title[i])
+                self.drop_coin(bv[i], num, csrf)
+                time.sleep(1)
+            url = self.url5 + "?bvid=" + bv[a]  # 动态视频下的推荐视频
+            recommend = self.get_requests(url)
+            re_title, re_bv = self.cope_recommend(recommend)
+            for j in range(5 - len(bv)):
+                self.logger.info('开始投币于推荐视频，标题%s' % re_title[j])
+                self.drop_coin(re_bv[j], num, csrf)
+                time.sleep(1)
+            return True
+        elif len(bv) >= 5 and (num == 1 or num == 2):
+            for i in range(len(bv)):
+                self.logger.info('开始投币，标题%s' % title[i])
+                self.drop_coin(bv[i], num, csrf)
+                if i == 4:
+                    self.logger.info('投币数量到达5个，结束投币')
+                    break
+                time.sleep(1)
+            return True
+        else:
+            self.logger.info('可投币视频数量%s，不投币' % len(bv))
+            return False
+
+    def drop_coin(self, bv, coin, csrf):
+        data = {
+            'bvid': bv,
+            'multiply': coin,
+            'csrf': csrf
+        }
+        drop = self.post_requests(self.url3, data)
+        self.cope_drop_coin(drop)
 
     def cope_drop_coin(self, data):  # 接收打赏返回数据，处理数据
         if data['code'] == 0:
@@ -74,17 +78,7 @@ class Daily(User):
         else:
             self.logger.info(data['message'])
 
-    def cope_share(self, data):  # 接收分享返回数据，处理数据
-        if data['code'] == 0:
-            self.logger.info("分享成功 ௹ ✓")
-        elif data['code'] == -101:
-            self.logger.info(data['message'] + "请检查cookie")
-        elif data['code'] == -111:
-            self.logger.info(data['message'] + "请检查csrf")
-        else:
-            self.logger.info(data['message'])
-
-    def cope_recommend(self, data):  # 接收推荐返回数据，处理数据
+    def cope_recommend(self, data):
         title = []
         bv = []
         if data['code'] == 0:
@@ -101,50 +95,79 @@ class Daily(User):
         else:
             self.logger.info(data['message'])
 
-    def cope_play_video(self, data):  # 接收播放返回数据，处理数据
+    def share_dynamic(self, title, bv, csrf):
+        data = {
+            "bvid": bv,
+            "csrf": csrf
+        }
+        self.logger.info('开始分享动态，标题%s' % title)
+        share = self.post_requests(self.url4, data)
+        self.cope_share_dynamic(share)
+
+    def cope_share_dynamic(self, data):
+        if data['code'] == 0:
+            self.logger.info("分享成功 ௹ ✓")
+        elif data['code'] == -101:
+            self.logger.info(data['message'] + "请检查cookie")
+        elif data['code'] == -111:
+            self.logger.info(data['message'] + "请检查csrf")
+        else:
+            self.logger.info(data['message'])
+
+    def play_video(self, bv, title):
+        data = {
+            "bvid": bv,
+            "play_time": random.randint(30, 45),
+            "realtime": random.randint(30, 45)
+        }
+        self.logger.info('开始播放视频，标题%s' % title)
+        play = self.post_requests(self.url6, data)
+        self.cope_play_video(play)
+
+    def cope_play_video(self, data):
         if data['code'] == 0:
             self.logger.info("播放成功 ௹ ✓")
         else:
             self.logger.info(data['message'])
 
-    def cope_DoSign(self, data):  # 接收签到返回数据，处理数据
+    def DoSign(self):
+        self.logger.info('开始直播签到')
+        sign = self.get_requests(self.url8)
+        self.cope_sign(sign)
+
+    def cope_sign(self, data):
         if data['code'] == 0:
-            self.logger.info("直播签到成功 ௹ ✓")
+            self.logger.info("签到成功 ௹ ✓")
         else:
             self.logger.info(data['message'])
 
     def decorate(self):
-        self.logger.info("开始每日登录经验+5,一天只能加一次 ☆*: .｡. o(≧▽≦)o .｡.:*☆")
-        self.logger.info("开始投币，分享，签到，每次投币5个硬币，分享一次，直播签到")
-        self.logger.info("一天只需要运行一次，请勿重复运行，以免硬币流失，该脚本依据用户关注的up主投币，如果up动态过少会造成无法完成任务")
+        self.logger.info("该脚本由GitHub@王权富贵233制作")
+        self.logger.info("脚本依赖于requests，和Bilibili.Method.py")
+        self.logger.info("每天自动任务65经验,可以自行设置投币数量,推荐cron 1 1 * * *")
+        self.logger.info("✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️")
 
-    def run_daily(self):
+    def run(self):
         self.decorate()
-        for i in range(len(self.a)):
-            self.headers['Cookie'] = self.a[i]  # 获取cookies设置到headers中
-            data = self.get_requests()  # 获取用户信息,返回数据
-            self.receive_message(data)  # 接收用户信息，处理数据，输出来给我们看
-            sign = self.DoSign()
-            self.cope_DoSign(sign)
-            dynamic = self.consult_dynamic(self.url2)  # 获取动态信息
-            title, bv = self.cope_dynamic(dynamic)  # 处理动态信息
+        for i in range(len(self.cookies)):
+            self.headers['Cookie'] = self.cookies[i]
+            info = self.get_requests(self.url)
+            self.cope_info(info)
+            self.DoSign()
+            dynamic = self.get_requests(self.url2)
+            title, bv = self.cope_dynamic(dynamic)
+            self.check_bv_num(bv, title, self.coin[i], self.csrfs[i])
             if len(bv) > 0:
-                play_data = self.play_video(bv[0], title[0])  # 播放视频
-                self.cope_play_video(play_data)  # 处理播放视频返回数据
-                self.start_drop_coin(title, bv, self.csrf[i])  # 投币函数,输出视频标题和bv信息
-                a = random.randint(0, len(bv)-1)
-                share_dynamic = self.share_dynamic(bv[a], title[a], self.csrf[i])  # 分享动态，只分享第一个视频
-                self.cope_share(share_dynamic)  # 输出分享返回数据
+                s_bv = random.randint(0, len(bv))
+                self.share_dynamic(title[s_bv], bv[s_bv], self.csrfs[i])
+                self.play_video(bv[s_bv], title[s_bv])
             else:
-                self.logger.info("动态过少，关注多几个up主，比如我：猫三骂骂咧咧的说，再来运行吧")
-            data = self.get_requests()  # 获取用户信息,返回数据
-            self.receive_message(data)
-            self.logger.info("================分割线====================")
-            if i == len(self.a) - 1:
-                break
-            time.sleep(5)
+                self.logger.info('没有可分享的动态')
+                self.logger.info('也没有可播放的视频')
+            self.logger.info('第%s个帐号结束' % (i + 1))
+        self.logger.info('😎😎😎😎😎😎😎😎😎😎😎全部结束😎😎😎😎😎😎😎😎😎😎😎')
 
 
 if __name__ == '__main__':
-    daily = Daily()
-    daily.run_daily()
+    cope = CopeMethod()
+    cope.run()
