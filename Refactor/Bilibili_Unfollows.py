@@ -1,5 +1,4 @@
 from Bilibili_Daily import *
-import requests
 
 
 class Unfollows(DailyMethod):
@@ -7,73 +6,66 @@ class Unfollows(DailyMethod):
         super().__init__()
         self.Number = self.fetch_num()
 
-    def check_group(self):
-        try:
-            response = requests.get(self.url9, headers=self.headers)
-            if response.status_code == 200:
-                data = response.json()
-                if data['code'] == 0:
-                    for i in range(len(data['data'])):
-                        if data['data'][i]['name'] == '天选时刻':
-                            return data['data'][i]['tagid']
-                        else:
-                            pass
-                else:
-                    self.logger.error('获取粉丝分组失败，状态码%s' % data['code'])
-                    return False
-            else:
-                self.logger.error("error: %s" % response.status_code)
-                return False
-        except Exception as e:
-            self.logger.error("error: %s" % e)
+    def check_group(self, number, csrf):
+        self.logger.info('检查是否有天选时刻分组')
+        group = self.get_requests(self.url9)
+        self.cope_group(group, number, csrf)
 
-    def collect_mid(self, tagid):
-        mids = []
-        url = self.url10 + '?tagid=%s' % tagid
-        try:
-            response = requests.get(url, headers=self.headers)
-            if response.status_code == 200:
-                data = response.json()
-                if data['code'] == 0:
-                    for i in range(len(data['data'])):
-                        mids.append(data['data'][i]['mid'])
-                    return mids
+    def cope_group(self, group, number, csrf):
+        for i in group['data']:
+            if i['name'] == '天选时刻':
+                self.logger.info('有天选时刻分组，开始检查关注人数')
+                if i['count'] > 0:
+                    self.logger.info('天选时刻分组关注人数: %s ***>开始执行取关任务' % i['count'])
+                    self.fetch_mid(i['tagid'], number, csrf)
                 else:
-                    self.logger.error('获取粉丝分组失败，状态码%s' % data['code'])
-                    return False
-            else:
-                self.logger.error("error: %s" % response.status_code)
-                return False
-        except Exception as e:
-            self.logger.error("error: %s" % e)
+                    self.logger.info('天选时刻分组关注人数: %s ***>无需取关' % i['count'])
+                break
+        else:
+            self.logger.info('没有天选时刻分组，结束检查')
+            return None
 
-    def unfollow(self, num, mid, csrf):
-        if len(mid) == 0 or num == 0:
-            self.logger.error('没有可取关的up主')
-        elif len(mid) < num:
+    def fetch_mid(self, group_id,number, csrf):
+        url = self.url10 + '?tagid=%s' % group_id
+        group_info = self.get_requests(url)
+        userid, uname = self.cope_User(group_info)
+        self.cyc_unfollow(userid, uname, number, csrf)
+
+    @staticmethod
+    def cope_User(group_info):
+        mid = []
+        uname = []
+        for i in group_info['data']:
+            mid.append(i['mid'])
+            uname.append(i['uname'])
+        return mid, uname
+
+    def cyc_unfollow(self, mid, uname, number, csrf):
+        if number <= 0:
+            self.logger.info("你设置了不取关，结束取关")
+        elif len(mid) <= number:
             for i in range(len(mid)):
-                data = {'fid': mid[i], 'act': 2, 're_src': 11, 'csrf': csrf}
-                self.post_request(mid[i], data)
+                self.logger.info('开始取关: >%s' % uname[i])
+                self.unfollow(mid[i], csrf)
+                time.sleep(1)
+        elif len(mid) > number:
+            for i in range(number):
+                self.logger.info('开始取关: >%s' % uname[i])
+                self.unfollow(mid[i], csrf)
                 time.sleep(1)
         else:
-            for i in range(num):
-                data = {'fid': mid[i], 'act': 2, 're_src': 11, 'csrf': csrf}
-                self.post_request(mid[i], data)
-                time.sleep(1)
+            pass
 
-    def post_request(self, mid, data):
-        try:
-            response = requests.post(self.url1, headers=self.headers, data=data)
-            if response.status_code == 200:
-                data = response.json()
-                if data['code'] == 0:
-                    self.logger.info('%s取关成功' % mid)
-                else:
-                    self.logger.error('%s取关失败，状态码%s' % (mid, data))
-            else:
-                self.logger.error("error: %s" % response.status_code)
-        except Exception as e:
-            self.logger.error("error: %s" % e)
+    def unfollow(self, mid, csrf):
+        data = {'fid': mid, 'act': 2, 're_src': 11, 'csrf': csrf}
+        unfollow = self.post_requests(self.url1, data)
+        self.unfollow_info(unfollow)
+
+    def unfollow_info(self, unfollow):
+        if unfollow['code'] == 0:
+            self.logger.info('取关成功')
+        else:
+            self.logger.info('取关失败')
 
     def run(self):
         self.logger.info('本脚本依赖于Bilibili_Daily.py，确保文件在同一目录下')
@@ -81,15 +73,7 @@ class Unfollows(DailyMethod):
         self.logger.info("💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕")
         for i in range(len(self.cookies)):
             self.headers['cookie'] = self.cookies[i]
-            data = self.get_requests(self.url)
-            self.cope_info(data)
-            tagid = self.check_group()
-            if tagid is not None:
-                mids = self.collect_mid(tagid)
-                self.unfollow(self.Number[i], mids, self.csrfs[i])
-            else:
-                print('没有天选时刻分组')
-                continue
+            self.check_group(self.Number[i], self.csrfs[i])
         self.logger.info("=============》结束《============")
 
 
