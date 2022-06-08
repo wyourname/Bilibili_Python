@@ -44,6 +44,7 @@ class UserElement:
         self.url10 = "https://api.bilibili.com/x/relation/tag"
         self.cookies = []
         self.csrfs = []
+        self.Num = []
         self.coin = []
         logging.basicConfig(level=logging.INFO, format='%(message)s')
         self.logger = logging.getLogger(__name__)
@@ -72,6 +73,17 @@ class UserElement:
         except Exception as e:
             self.logger.info("请检查你的cookie是否正确 " + str(e))
         return self.csrfs
+
+    def fetch_num(self):
+        try:
+            with open('Bilibili_config.json', 'r', encoding='utf-8') as f:
+                Num = json.load(f)
+                for i in range(len(Num['Unfollows'])):
+                    self.Num.append(Num['Unfollows'][i]['number'])
+        except Exception as e:
+            self.logger.info("请检查文件路径是否存在或者文件是否正确，文件应该与当前文件在同一目录下")
+            self.logger.error(e)
+        return self.Num
 
     def fetch_page(self):
         try:
@@ -117,10 +129,12 @@ class UserElement:
         self.cookies = self.fetch_cookies()
         self.csrfs = self.fetch_csrf()
         self.coin = self.fetch_drop_coin()
+        self.Num = self.fetch_num()
         for i in range(len(self.cookies)):
             self.logger.info("你的第" + str(i + 1) + "个cookie的值为：" + self.cookies[i])
             self.logger.info("你第" + str(i + 1) + "个csrf的值为：" + self.csrfs[i])
             self.logger.info("第%s个帐号每个视频投币数为：%s,投币数应为1-2个合理" % (i+1, self.coin[i]))
+            self.logger.info("第%s个帐号最大取关数为：%s,数应为50个合理" % (i+1, self.Num[i]))
         self.logger.info("你的最大爬取页数为：%s,爬取最大页数50左右为宜你也可以选择1000" % self.fetch_page())
         self.logger.info("你的最大爬取线程数为：%s,爬取最大线程数为2-3左右为宜你也可以选择10" % self.fetch_thread())
 
