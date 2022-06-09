@@ -124,12 +124,9 @@ class ChosenTime(UserElement):
             if response.status_code == 200:
                 data4 = json.loads(response.text)
                 if data4['code'] == 0:
-                    if data4['message'] == '':
-                        self.logger.info("【参与天选成功】")
-                        time.sleep(random.randint(2, 3))
-                        self.control_user(uid, csrf)
-                    else:
-                        self.logger.info(data4['message'])
+                    self.logger.info("【参与天选成功】")
+                    time.sleep(random.randint(2, 3))
+                    self.control_user(uid, csrf)
                 else:
                     self.logger.info(data4['message'])
                     return data4['code']
