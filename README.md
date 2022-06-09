@@ -10,6 +10,8 @@
 
 ## 注意：拉要5个py文件一个config.json 在青龙之需要挂着Bilibili_Daily.py和Bilibili_CT.py(一个任务，一个天选，一个取关) 感兴趣可以给我点个star
 
+不用拉配置文件了，运行user.py就会生成配置文件的了，把cookie填进去就好了
+
 6.8 新配置，可自定义每个视频投币数量 1-2之间 ，每个py都可运行，user可查看cookie是否读出来，method可查看cookie有效 多账户如图：
 ![image](https://user-images.githubusercontent.com/63834404/172534292-379beceb-fa2d-42dc-ab4e-39cb965181fc.png)
 
