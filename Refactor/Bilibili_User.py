@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 
 # 这里是把模块里面的一些变量提取出来，方便后面的使用
@@ -42,12 +43,42 @@ class UserElement:
         self.url8 = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
         self.url9 = "https://api.bilibili.com/x/relation/tags"
         self.url10 = "https://api.bilibili.com/x/relation/tag"
+        self.url_all = "https://api.live.bilibili.com/xlive/web-interface/v1/second/getList?platform=web&parent_area_id" \
+                       "=%s&area_id=%s&page=%s"
         self.cookies = []
         self.csrfs = []
         self.Num = []
         self.coin = []
         logging.basicConfig(level=logging.INFO, format='%(message)s')
         self.logger = logging.getLogger(__name__)
+
+    def create_file(self):
+        config = os.getcwd() + '/Bilibili_config.json'
+        if os.path.exists(config):
+            self.logger.info("----------文件已存在---------")
+            return True
+        else:
+            with open('./Bilibili_config.json', 'w', encoding='utf-8') as f:
+                json.dump({
+                    "Users": [
+                        {"Cookie": ""}
+                    ],
+                    "Unfollows": [
+                        {
+                            "number": 50
+                        }
+                    ],
+                    "Drop_coin": [
+                        {
+                            "User": 1
+                        }
+                    ],
+                    "max_page": 100,
+                    "max_thread": 7}, f, ensure_ascii=False)
+                self.logger.info("文件创建格式生成success,请前往我的仓库添加cookie")
+                self.logger.info("请在文件中添加Cookie 如：")
+                self.logger.info('{"Users": [{"Cookie": "这里是你的cookie"}], "Unfollows": [{"number": 50}], "Drop_coin": [{"User": 1}], "max_page": 100, "max_thread": 7}')
+                return True
 
     def fetch_cookies(self):
         try:
@@ -115,28 +146,29 @@ class UserElement:
             return 0
 
     def basic_info(self):
-        self.logger.info("-----------------该脚本为检查你填的配置-----------------")
-        self.logger.info("---------------请确保你的配置文件在同一目录下-------------")
-        self.logger.info("--------请确保你的配置文件名为Bilibili_config.json-------")
-        self.logger.info("正确的cookie格式如下，顺序可变动：")
-        self.logger.info("buvid3=xxxx; sid=xxxx; buvid_fp_plain=xxxxxx; rpdid=xxxx; blackside_state=0; "
-                         "buvid_fp=xxxxxx; _uuid=xxxxx; buvid4=xxxxx; i-wanna-go-back=-1; LIVE_BUVID=xxx; "
-                         "CURRENT_BLACKGAP=x; nostalgia_conf=-1; hit-dyn-v2=1; DedeUserID=xxxxx; "
-                         "DedeUserID__ckMd5=xxxxxx; SESSDATA=xxxxx; bili_jct=xxxx; b_ut=xx; CURRENT_QUALITY=xx; "
-                         "fingerprint3=xxx; fingerprint=xxx; CURRENT_FNVAL=80; bp_video_offset_289549318=xxxxx; "
-                         "innersign=0; b_lsid=xxxx; b_timer=xxxx; PVID=xxx")
-        self.logger.info("********************************************************")
-        self.cookies = self.fetch_cookies()
-        self.csrfs = self.fetch_csrf()
-        self.coin = self.fetch_drop_coin()
-        self.Num = self.fetch_num()
-        for i in range(len(self.cookies)):
-            self.logger.info("你的第" + str(i + 1) + "个cookie的值为：" + self.cookies[i])
-            self.logger.info("你第" + str(i + 1) + "个csrf的值为：" + self.csrfs[i])
-            self.logger.info("第%s个帐号每个视频投币数为：%s,投币数应为1-2个合理" % (i+1, self.coin[i]))
-            self.logger.info("第%s个帐号最大取关数为：%s,数应为50个合理" % (i+1, self.Num[i]))
-        self.logger.info("你的最大爬取页数为：%s,爬取最大页数50左右为宜你也可以选择1000" % self.fetch_page())
-        self.logger.info("你的最大爬取线程数为：%s,爬取最大线程数为2-3左右为宜你也可以选择10" % self.fetch_thread())
+        if self.create_file():
+            self.logger.info("-----------------该脚本为生成Bilibili_config.json-----------------")
+            self.logger.info("正确的cookie格式如下，顺序可变动：")
+            self.logger.info("buvid3=xxxx; sid=xxxx; buvid_fp_plain=xxxxxx; rpdid=xxxx; blackside_state=0; "
+                             "buvid_fp=xxxxxx; _uuid=xxxxx; buvid4=xxxxx; i-wanna-go-back=-1; LIVE_BUVID=xxx; "
+                             "CURRENT_BLACKGAP=x; nostalgia_conf=-1; hit-dyn-v2=1; DedeUserID=xxxxx; "
+                             "DedeUserID__ckMd5=xxxxxx; SESSDATA=xxxxx; bili_jct=xxxx; b_ut=xx; CURRENT_QUALITY=xx; "
+                             "fingerprint3=xxx; fingerprint=xxx; CURRENT_FNVAL=80; bp_video_offset_289549318=xxxxx; "
+                             "innersign=0; b_lsid=xxxx; b_timer=xxxx; PVID=xxx")
+            self.logger.info("********************************************************")
+            self.cookies = self.fetch_cookies()
+            self.csrfs = self.fetch_csrf()
+            self.coin = self.fetch_drop_coin()
+            self.Num = self.fetch_num()
+            for i in range(len(self.cookies)):
+                self.logger.info("你的第" + str(i + 1) + "个cookie的值为：" + self.cookies[i])
+                self.logger.info("你第" + str(i + 1) + "个csrf的值为：" + self.csrfs[i])
+                self.logger.info("第%s个帐号每个视频投币数为：%s,投币数应为1-2个合理" % (i + 1, self.coin[i]))
+                self.logger.info("第%s个帐号最大取关数为：%s,数应为50个合理" % (i + 1, self.Num[i]))
+            self.logger.info("你的最大爬取页数为：%s,爬取最大页数50左右为宜你也可以选择1000" % self.fetch_page())
+            self.logger.info("你的最大爬取线程数为：%s,爬取最大线程数为2-3左右为宜你也可以选择10" % self.fetch_thread())
+        else:
+            self.logger.info("未知错误")
 
 
 if __name__ == '__main__':
