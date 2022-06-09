@@ -102,36 +102,30 @@ class ChosenTime(UserElement):
         if response.status_code == 200:
             data3 = json.loads(response.text)
             if data3['code'] == 0:
-                test = "this is a test"
                 self.logger.info("【奖品】是：%s,数量为：%s,【需要条件】：%s" % (
                     data3['data']['award_name'], data3['data']['award_num'], data3['data']['require_text']))
-                self.TX(data3['data']['id'], roomid, uid, csrf, test)
+                self.TX(data3['data']['id'], roomid, uid, csrf)
                 self.logger.info("test------------")
             else:
                 self.logger.info(data3)
         else:
             self.logger.error('检查房间信息失败，状态码：%s' % response.status_code)
 
-    def TX(self, rid, roomid, uid, csrf, test):
+    def TX(self, rid, roomid, uid, csrf):
         url_tx = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/Join"
         data = {'id': rid, 'platfrom': 'pc', 'roomid': roomid, 'csrf': csrf}
         response = requests.post(url_tx, headers=self.headers, data=data)
         if response.content:
-            self.logger.info(test)
             data4 = json.loads(response.text)
+            self.logger.info(data4)
             if data4['code'] == 0:
-                if data4['message'] == '':
-                    self.logger.info("【参与天选成功】")
-                    time.sleep(random.randint(2, 3))
-                    self.control_user(uid, csrf)
-                else:
-                    self.logger.info(data4['message'])
+                self.logger.info("【参与天选成功】")
+                time.sleep(random.randint(2, 3))
+                self.control_user(uid, csrf)
             else:
                 self.logger.info(data4)
                 self.logger.info(data4['message'])
-                return data4['code']
         else:
-            self.logger.error(test+"参数跑到这里来了")
             self.logger.error('天选失败，状态码：%s' % response.status_code)
 
     def control_user(self, uid, csrf):
