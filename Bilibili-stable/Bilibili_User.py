@@ -16,7 +16,7 @@ class Basic(Config):
     def get_requests(self, url):
         try:
             response = requests.get(url, headers=self.headers, timeout=5)
-            time.sleep(1)
+            time.sleep(0.5)
             if response.status_code == 200:
                 get_data = json.loads(response.text)
                 return get_data
@@ -29,7 +29,7 @@ class Basic(Config):
     def post_requests(self, url, data):
         try:
             response = requests.post(url, headers=self.headers, data=data, timeout=5)
-            time.sleep(1)
+            time.sleep(0.5)
             if response.status_code == 200:
                 post_data = json.loads(response.text)
                 return post_data
@@ -54,6 +54,8 @@ class Basic(Config):
 
     def user_info(self):
         self.logger.info("**********用户信息**********")
+        self.logger.info('如果你碰到请求失败，错误信息：Expecting value: line 1 column 1 (char 0)  该错误')
+        self.logger.info("请到我的github查看解决方案：https://github.com/wangquanfugui233/Bilibili_Python")
         self.logger.info("该脚本为验证你的cookie是否有效，如果cookie无效，请检查cookie是否过期")
         self.logger.info("脚本包含了日常任务函数，如果你不需要日常任务，请删除该脚本和Bilibili_Daily.py文件")
         for i in range(len(self.cookies)):

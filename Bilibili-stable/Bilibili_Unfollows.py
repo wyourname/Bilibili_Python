@@ -68,8 +68,10 @@ class Unfollows(Basic):
             self.logger.info('取关失败')
 
     def run(self):
-        self.logger.info('本脚本依赖于Bilibili_Daily.py，确保文件在同一目录下')
+        self.logger.info('本脚本依赖于Bilibili_User.py，确保文件在同一目录下')
         self.logger.info('脚本为取关天选时刻分组的up主')
+        self.logger.info('如果你碰到请求失败，错误信息：Expecting value: line 1 column 1 (char 0)  该错误')
+        self.logger.info("请到我的github查看解决方案：https://github.com/wangquanfugui233/Bilibili_Python")
         self.logger.info("💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕💕")
         for i in range(len(self.cookies)):
             self.headers['cookie'] = self.cookies[i]

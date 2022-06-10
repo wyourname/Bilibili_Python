@@ -1,16 +1,11 @@
-import random
-import time
-import requests
 import sys
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
-from Bilibili_Config import *
+from Bilibili_User import *
 
 
-class ChosenTime(Config):
+class Refactor_Bilibili_CTime(Basic):
     def __init__(self):
         super().__init__()
-        self.cookie = self.fetch_cookies()
-        self.csrf = self.fetch_csrf()
         self.max_page = self.fetch_page()
         self.max_thread = self.fetch_thread()
         try:
@@ -19,25 +14,50 @@ class ChosenTime(Config):
             self.logger.error('初始化线程池失败，原因：%s' % e)
             exit(1)
 
-    def collect_area(self):
-        try:
-            response = requests.get(self.url7, headers=self.headers)
-            if response.status_code == 200:
-                data1 = json.loads(response.text)['data']
-                return data1
-            else:
-                self.logger.error('获取全部直播分区失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('获取全部直播分区失败，原因：%s' % e)
+    def check_group(self, csrf):
+        group = self.get_requests(self.url9)
+        tag_id = self.cope_group(group)
+        if tag_id:
+            self.logger.info("+++++++++>开始扫描全部分区<++++++++++")
+            self.scan_all_area(tag_id, csrf)
+        else:
+            self.logger.info("=========>未发现天选时刻分组，开始创建<=========")
+            tag_id = self.create_group(csrf)
+            self.scan_all_area(tag_id, csrf)
+            return
 
-    def cope_area(self, data1, csrf):  # 这里是核心分区的扫描
+    def create_group(self, csrf):
+        data = {'tag': '天选时刻', 'csrf': csrf}
+        group = self.post_requests(self.url_group, data)
+        if group['code'] == 0:
+            self.logger.info("=========>创建天选时刻分组成功<=========")
+            return group['data']['tagid']
+        else:
+            self.logger.error("=========>创建天选时刻分组失败<=========")
+            return
+
+    def cope_group(self, group):
+        for i in group['data']:
+            if i['name'] == '天选时刻':
+                self.logger.info("=========>发现有天选时刻分组，继续执行<=========")
+                return i['tagid']
+            else:
+                pass
+
+    def scan_all_area(self, gid, csrf):
+        all_area = self.get_requests(self.url7)
+        self.cope_all_area(all_area, gid, csrf)
+
+    def cope_all_area(self, all_area, gid, csrf):
         tasklist = []
-        for i in data1:
-            self.logger.info('--------->正在扫描《' + i['name'] + "》<---------")
-            data_id, data_name = self.cope_min_area(i['list'])
-            task = self.pool.submit(self.cycle, i['id'], data_id, data_name, csrf)
+        for i in all_area['data']:
+            self.logger.info('*********>正在扫描《' + i['name'] + "》<*********")
+            area_id, area_name = self.cope_min_area(i['list'])
+            task = self.pool.submit(self.cycle_min_area, i['id'], area_id, area_name, gid, csrf)
             tasklist.append(task)
-        return tasklist
+            # self.cycle_min_area(i['id'], area_id, area_name, gid, csrf)
+        wait(tasklist, return_when=ALL_COMPLETED)
+        self.logger.info('*********>全部扫描完成<*********')
 
     @staticmethod
     def cope_min_area(data1):
@@ -48,44 +68,31 @@ class ChosenTime(Config):
             data_name.append(i['name'])
         return data_id, data_name
 
-    def cycle(self, parents_id, child_id, child_title, csrf):
-        for i in child_id:
-            self.logger.info('      ->正在扫描' + child_title[child_id.index(i)] + "<-")
-            self.cycle_page(parents_id, i, csrf)
-            time.sleep(1)
+    def cycle_min_area(self, parent_id, area_id, area_name, gid, csrf):
+        for i in area_id:
+            self.logger.info('      ->正在扫描' + area_name[area_id.index(i)] + "<-")
+            self.cycle_page(parent_id, i, gid, csrf)
 
-    def cycle_page(self, parents_id, child_id, csrf):
+    def cycle_page(self, parent_id, area_id, gid, csrf):
         page = 0
         while True:
             page += 1
+            url_page = self.url_all % (parent_id, area_id, page)
             if page > self.max_page:
-                self.logger.info("页面到达设置的最大页数，结束扫描")
+                self.logger.info('      ->Scan reached maximum number of pages, stop<-')
                 break
-            data3 = self.scanner_page(parents_id, child_id, page)
-            if data3:
-                self.scan_page_room(data3, csrf)
+            page_info = self.get_requests(url_page)
+            if page_info['data']['list']:
+                self.scan_room(page_info['data']['list'], gid, csrf)
             else:
+                self.logger.info('      ->Scan reached the end of the page, stop<-')
                 break
-            time.sleep(random.randint(1, 3))
 
-    def scanner_page(self, parents_id, child_id, page):  # 搜寻子分区的直播间
-        try:
-            url_ct = "https://api.live.bilibili.com/xlive/web-interface/v1/second/getList?platform=web&parent_area_id" \
-                     "=%s&area_id=%s&page=%s" % (parents_id, child_id, page)
-            response = requests.get(url_ct, headers=self.headers)
-            if response.status_code == 200:
-                data3 = json.loads(response.text)['data']['list']
-                return data3
-            else:
-                self.logger.error('获取第%s的%s页直播间信息失败，状态码：%s' % (child_id, page, response.status_code))
-        except Exception as e:
-            self.logger.error('获取第%s的%s页直播间信息失败，原因：%s' % (child_id, page, e))
-
-    def scan_page_room(self, data3, csrf):
-        for i in data3:
+    def scan_room(self, page_info, gid, csrf):
+        for i in page_info:
             room_info = self.screen_out_room(i)
             if room_info is not None:
-                self.check_Room(room_info[0], room_info[1], csrf)
+                self.check_Room(room_info[0], room_info[1], gid, csrf)
             else:
                 continue
 
@@ -99,120 +106,54 @@ class ChosenTime(Config):
         else:
             pass
 
-    def check_Room(self, roomid, uid, csrf):
-        url_check = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/Check?roomid=%s" % roomid
-        try:
-            response = requests.get(url_check, headers=self.headers)
-            if response.status_code == 200:
-                data3 = json.loads(response.text)
-                if data3['code'] == 0:
-                    self.logger.info("【奖品】是：%s,数量为：%s,【需要条件】：%s" % (
-                        data3['data']['award_name'], data3['data']['award_num'], data3['data']['require_text']))
-                    self.TX(data3['data']['id'], roomid, uid, csrf)
-                else:
-                    self.logger.info(data3)
-            else:
-                self.logger.error('检查房间信息失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('检查房间信息失败，原因：%s' % e)
+    def check_Room(self, room_id, uid, gid, csrf):
+        url = self.url_check % room_id
+        tx_info = self.get_requests(url)
+        if tx_info['code'] == 0:
+            self.logger.info("【奖品】是：%s,数量为：%s,【需要条件】：%s" % (
+                tx_info['data']['award_name'], tx_info['data']['award_num'], tx_info['data']['require_text']))
+            self.TX_Join(tx_info['data']['id'], room_id, gid, uid, csrf)
 
-    def TX(self, rid, roomid, uid, csrf):
-        url_tx = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/Join"
-        try:
-            data = {'id': rid, 'platfrom': 'pc', 'roomid': roomid, 'csrf': csrf}
-            response = requests.post(url_tx, headers=self.headers, data=data)
-            if response.status_code == 200:
-                data4 = json.loads(response.text)
-                if data4['code'] == 0:
-                    self.logger.info("【参与天选成功】")
-                    time.sleep(random.randint(2, 3))
-                    self.control_user(uid, csrf)
-                else:
-                    self.logger.info(data4['message'])
-                    return data4['code']
-            else:
-                self.logger.error('天选失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('天选失败，原因：%s' % e)
+    def TX_Join(self, rid, room_id, gid, uid, csrf):
+        data = {'id': rid, 'platfrom': 'pc', 'roomid': room_id, 'csrf': csrf}
+        Join_info = self.post_requests(self.url_tx, data)
+        self.cope_Join(Join_info, gid, uid, csrf)
 
-    def control_user(self, uid, csrf):
-        gid = self.check_group()
-        if gid is not None:
-            self.logger.info("存在天选时刻分组，执行移动用户操作")
-            self.move_user(gid, uid, csrf)
+    def cope_Join(self, join_info, gid, uid, csrf):
+        if join_info['code'] == 0:
+            self.logger.info("【参加天选抽奖成功】,等待2秒改变用户组")
+            time.sleep(2)
+            self.Move_User(gid, uid, csrf)
         else:
-            self.logger.info("不存在天选时刻分组，执行创建分组操作")
-            gid = self.create_group(csrf)
-            if gid is not None:
-                self.move_user(gid, uid, csrf)
-            else:
-                self.logger.info("未知错误")
+            self.logger.info(join_info['message'])
 
-    def check_group(self):
-        url_group = "http://api.bilibili.com/x/relation/tags"
-        try:
-            response = requests.get(url_group, headers=self.headers)
-            if response.status_code == 200:
-                data = json.loads(response.text)
-                if data['code'] == 0:
-                    for i in range(len(data['data'])):
-                        if data['data'][i]['name'] == '天选时刻':
-                            return data['data'][i]['tagid']
-                        else:
-                            pass
-                else:
-                    self.logger.error(data)
-            else:
-                self.logger.error('获取信息失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('获取信息失败，原因：%s' % e)
+    def Move_User(self, gid, uid, csrf):
+        data = {'beforeTagids': 0, 'afterTagids': gid, 'fids': uid, 'csrf': csrf}
+        Move_info = self.post_requests(self.url_relationship, data)
+        if Move_info['code'] == 0:
+            self.logger.info("【更改分组成功】")
+        else:
+            self.logger.info(Move_info['message'])
 
-    def create_group(self, csrf):
-        url_make = "http://api.bilibili.com/x/relation/tag/create"
-        try:
-            data = {'tag': '天选时刻', 'csrf': csrf}
-            response = requests.post(url_make, headers=self.headers, data=data)
-            if response.status_code == 200:
-                data2 = json.loads(response.text)
-                if data2['code'] == 0:
-                    self.logger.info("创建分组成功")
-                    return data2['data']['tagid']
-                else:
-                    self.logger.error(data2)
-            else:
-                self.logger.error('创建分组失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('创建分组失败，原因：%s' % e)
-
-    def move_user(self, gid, uid, csrf):
-        url_relationship = "http://api.bilibili.com/x/relation/tags/moveUsers"
-        try:
-            data = {'beforeTagids': 0, 'afterTagids': gid, 'fids': uid, 'csrf': csrf}
-            response = requests.post(url_relationship, headers=self.headers, data=data)
-            if response.status_code == 200:
-                data3 = json.loads(response.text)
-                if data3['code'] == 0:
-                    self.logger.info("移动成功")
-                else:
-                    self.logger.error(data3)
-            else:
-                self.logger.error('移动失败，状态码：%s' % response.status_code)
-        except Exception as e:
-            self.logger.error('移动失败，原因：%s' % e)
+    def decorate(self):
+        self.logger.info("脚本由GitHub@王权富贵233提供")
+        self.logger.info('如果你碰到请求失败，错误信息：Expecting value: line 1 column 1 (char 0)  该错误')
+        self.logger.info("请到我的github查看解决方案：https://github.com/wangquanfugui233/Bilibili_Python")
+        self.logger.info("该脚本仅供学习交流，仅供学习参考，仅供学习参考")
+        self.logger.info("脚本不保证稳定性，请自行测试")
 
     def run(self):
-        self.logger.info('============开始执行==============')
-        for i in range(len(self.cookie)):
-            self.logger.info("***********正在执行第%s个账号**********" % (i+1))
-            self.headers["cookie"] = self.cookie[i]
-            data = self.collect_area()
-            tasklist = self.cope_area(data, csrf=self.csrf[i])
-            wait(tasklist, return_when=ALL_COMPLETED)
+        self.decorate()
+        for i in range(len(self.cookies)):
+            self.headers['Cookie'] = self.cookies[i]
+            user_info = self.get_requests(self.url)
+            self.cope_info(user_info)
+            self.check_group(self.csrfs[i])
+            self.logger.info("##########>第%s个帐号结束<##########" % (i + 1))
         self.pool.shutdown()
-        self.logger.info("😁😰😰😰😰😰😰😰😰程序结束😰😰😰😰😰😰😰😰😰😰")
         sys.exit(0)
 
 
 if __name__ == '__main__':
-    ct = ChosenTime()
-    ct.run()
+    bilibili = Refactor_Bilibili_CTime()
+    bilibili.run()
