@@ -133,6 +133,8 @@ class Refactor_Bilibili_CTime(Basic):
 
     def decorate(self):
         self.logger.info("脚本由GitHub@王权富贵233提供")
+        self.logger.info('如果你碰到请求失败，错误信息：Expecting value: line 1 column 1 (char 0)  该错误')
+        self.logger.info("请到我的github查看解决方案：https://github.com/wangquanfugui233/Bilibili_Python")
         self.logger.info("该脚本仅供学习交流，仅供学习参考，仅供学习参考")
         self.logger.info("脚本不保证稳定性，请自行测试")
 
