@@ -13,7 +13,7 @@
 curl -fsSL https://raw.githubusercontent.com/shufflewzc/QLDependency/main/Shell/QLOneKeyDependency.sh | sh
 第二条指令：ln -s /usr/bin/python3.9 /usr/bin/python
 第三条指令： python -m ensurepip  
-第四条查看python版本：python --version
+第四条查看python版本：python --version           因为我换好python版本了，所以省略第二第三指令
 
 ![image](https://user-images.githubusercontent.com/63834404/173025386-e3cafe03-05f4-4596-a548-f35ef5368d24.png)
 ![image](https://user-images.githubusercontent.com/63834404/173025446-7eaf32e1-e43a-4ca9-bb5e-0a0f357e1ed4.png)
