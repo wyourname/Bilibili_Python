@@ -73,7 +73,6 @@ class Refactor_Bilibili_CTime(Basic):
         page = 0
         while True:
             page += 1
-            self.logger.info('      ->正在扫描第%s页' % page)
             url_page = self.url_all % (parent_id, area_id, page)
             if page > self.max_page:
                 self.logger.info('      ->Scan reached maximum number of pages, stop<-')
