@@ -143,7 +143,7 @@ class CopeMethod(Basic):
 
     def decorate(self):
         self.logger.info("该脚本由GitHub@王权富贵233制作")
-        self.logger.info("脚本依赖于requests，和Bilibili.Method.py")
+        self.logger.info("脚本依赖于requests，和Bilibili.User.py")
         self.logger.info("每天自动任务65经验,可以自行设置投币数量,推荐cron 1 1 * * *")
         self.logger.info("✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️")
 
@@ -158,7 +158,7 @@ class CopeMethod(Basic):
             title, bv = self.cope_dynamic(dynamic)
             self.check_bv_num(bv, title, self.coin[i], self.csrfs[i])
             if len(bv) > 0:
-                s_bv = random.randint(0, len(bv))
+                s_bv = random.randint(0, len(bv)-1)
                 self.share_dynamic(title[s_bv], bv[s_bv], self.csrfs[i])
                 self.play_video(bv[s_bv], title[s_bv])
             else:
