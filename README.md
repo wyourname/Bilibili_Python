@@ -7,7 +7,7 @@
 新手，不喜勿喷，不喜欢用觉得垃圾可以不用，不用骂我垃圾，写的垃圾是学艺不精ok
 会青龙拉库命令的可以告诉我我还不会配置😂
 
-## 请求失败，错误信息：Expecting value: line 1 column 1 (char 0) 该bug并非我的错，我也没办法弄，目前你只能选择更换python版本尝试
+## 请求失败，错误信息：Expecting value: line 1 column 1 (char 0) 该bug并非我的错，我也没办法弄，目前你只能选择更换python版本尝试,我也很疑惑出问题在哪里，我自己跑没问题的啊
 ### 方法如下：在alpine里面输入以下指令 
 curl -fsSL https://raw.githubusercontent.com/shufflewzc/QLDependency/main/Shell/QLOneKeyDependency.sh | sh
 第二条指令：ln -s /usr/bin/python3.9 /usr/bin/python
