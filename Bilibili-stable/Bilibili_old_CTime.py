@@ -109,9 +109,11 @@ class ChosenTime(Config):
 
     def TX(self, rid, roomid, uid, csrf):
         url_tx = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/Join"
+        self.headers['origin'] = 'https://live.bilibili.com'
+        self.headers['referer'] = 'https://live.bilibili.com/'
+        self.headers["path"] = "/xlive/lottery-interface/v1/Anchor/Join"
         data = {'id': rid, 'platfrom': 'pc', 'roomid': roomid, 'csrf': csrf}
         response = requests.post(url_tx, headers=self.headers, data=data)
-        response.encoding = "utf-8"
         self.logger.info(response.encoding)
         self.logger.info(response.text)
         if response.status_code == 200:
