@@ -16,7 +16,6 @@ class Basic(Config):
     def get_requests(self, url):
         try:
             response = requests.get(url, headers=self.headers, timeout=5)
-            time.sleep(0.5)
             if response.status_code == 200:
                 get_data = json.loads(response.text)
                 return get_data
@@ -29,7 +28,6 @@ class Basic(Config):
     def post_requests(self, url, data):
         try:
             response = requests.post(url, headers=self.headers, data=data, timeout=5)
-            time.sleep(0.5)
             if response.status_code == 200:
                 post_data = json.loads(response.text)
                 return post_data
