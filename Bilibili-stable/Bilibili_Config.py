@@ -18,7 +18,6 @@ class Config:
             "method": "GET",
             "scheme": "https",
             "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br",
             "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-US;q=0.6",
             "cookie": "",
             "dnt": "1",
