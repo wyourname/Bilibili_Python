@@ -22,13 +22,13 @@ class Refactor_Bilibili_CTime(Basic):
             self.scan_all_area(tag_id, csrf)
         else:
             self.logger.info("=========>未发现天选时刻分组，开始创建<=========")
-            tag_id = self.create_group(csrf)
-            self.scan_all_area(tag_id, csrf)
+            tag_id1 = self.create_group(csrf)
+            self.scan_all_area(tag_id1, csrf)
             return
 
     def create_group(self, csrf):
         data = {'tag': '天选时刻', 'csrf': csrf}
-        group = self.post_requests(self.url_group, data)
+        group = self.post_requests(self.create_url, data)
         if group['code'] == 0:
             self.logger.info("=========>创建天选时刻分组成功<=========")
             return group['data']['tagid']

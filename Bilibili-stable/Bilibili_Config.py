@@ -49,6 +49,7 @@ class Config:
         self.url_tx = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/Join"
         self.url_relationship = "http://api.bilibili.com/x/relation/tags/moveUsers"
         self.url_group = "http://api.bilibili.com/x/relation/tags"
+        self.create_url = "http://api.bilibili.com/x/relation/tag/create"
         self.cookies = []
         self.csrfs = []
         self.Num = []

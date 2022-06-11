@@ -51,6 +51,7 @@ class Unfollows(Basic):
             for i in range(number):
                 self.logger.info('开始取关: >%s' % uname[i])
                 self.unfollow(mid[i], csrf)
+                time.sleep(1)
         else:
             pass
 

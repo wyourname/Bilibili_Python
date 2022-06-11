@@ -27,6 +27,7 @@ class Basic(Config):
 
     def post_requests(self, url, data):
         try:
+            self.headers['method'] = 'POST'
             response = requests.post(url, headers=self.headers, data=data, timeout=5)
             if response.status_code == 200:
                 post_data = json.loads(response.text)
