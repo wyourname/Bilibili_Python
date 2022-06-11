@@ -111,7 +111,7 @@ class ChosenTime(Config):
         url_tx = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/Join"
         data = {'id': rid, 'platfrom': 'pc', 'roomid': roomid, 'csrf': csrf}
         response = requests.post(url_tx, headers=self.headers, data=data)
-        response.encoding = response.apparent_encoding
+        response.encoding = "ascii"
         self.logger.info(response.encoding)
         self.logger.info(response.text)
         if response.status_code == 200:
