@@ -7,10 +7,7 @@
 新手，不喜勿喷，不喜欢用觉得垃圾可以不用，不用骂我垃圾，写的垃圾是学艺不精ok
 会青龙拉库命令的可以告诉我我还不会配置😂
 
-## 请求失败，错误信息：Expecting value: line 1 column 1 (char 0) 该bug并非我的错，我也没办法弄，目前你只能选择更换python版本尝试,我也很疑惑出问题在哪里，我自己跑没问题的啊
-## 为了排除问题，请大家跑bug_ctime.py,将日志发给我可否
-
-## 修复了 Expecting value: line 1 column 1 (char 0)
+## 修复了 Expecting value: line 1 column 1 (char 0)，感谢帮我测试的人tg上的 @Koo Natsuki 耐心帮我测试一下午，真的感谢
 
 ## 感兴趣可以给我点个star  不用拉配置文件了，运行config.py就会生成配置文件的了，把cookie填进去就好了
 
