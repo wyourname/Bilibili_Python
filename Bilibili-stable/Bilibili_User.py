@@ -41,8 +41,11 @@ class Basic(Config):
         if data['code'] == 0:
             self.logger.info("**********" + data['data']['uname'] + "**********")
             self.logger.info("当前经验值：" + str(data['data']['level_info']['current_exp']))
-            level_day = (data['data']['level_info']['next_exp'] - data['data']['level_info']['current_exp']) / 65
-            self.logger.info('当前硬币数：' + str(data['data']['money']) + "，下一等级升级天数约" + str(int(level_day)))
+            if data['data']['level_info']['current_level'] == 6:
+                self.logger.info("你已经是lv6的大佬了")
+            else:
+                level_day = (data['data']['level_info']['next_exp'] - data['data']['level_info']['current_exp']) / 65
+                self.logger.info('当前硬币数：' + str(data['data']['money']) + "，下一等级升级天数约" + str(int(level_day)))
         elif data['code'] == -101:
             self.logger.info(data['message'] + "请检查cookie")
         elif data['code'] == -111:
