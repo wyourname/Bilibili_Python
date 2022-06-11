@@ -10,6 +10,8 @@
 ## 请求失败，错误信息：Expecting value: line 1 column 1 (char 0) 该bug并非我的错，我也没办法弄，目前你只能选择更换python版本尝试,我也很疑惑出问题在哪里，我自己跑没问题的啊
 ## 为了排除问题，请大家跑bug_ctime.py,将日志发给我可否
 
+## 修复了 Expecting value: line 1 column 1 (char 0)
+
 ## 感兴趣可以给我点个star  不用拉配置文件了，运行config.py就会生成配置文件的了，把cookie填进去就好了
 
 6.8 新配置，可自定义每个视频投币数量 1-2之间 ，每个py都可运行，user可查看cookie是否读出来，method可查看cookie有效 多账户如图：
