@@ -1,5 +1,5 @@
 # Bilibili_Python
-## 仅供个人学习，不得利用该仓库代码牟利，仅供学习参考
+## 仅供个人学习，不得利用该仓库代码牟利，仅供学习参考  感兴趣可以给我点个star
 我为什么写这个呢,主要就是闲的，其次就是我手机刷的青龙2.12.2模块运行不了 RayWangQvQ/BiliBiliToolPro 所以就写这个，其次就是想练习一下爬虫
 目前功能还没有完善，完善后会进行一次代码封装去除多余函数。
 可以关注我B站 猫三骂骂咧咧的说
@@ -9,7 +9,7 @@
 
 ## 修复了 Expecting value: line 1 column 1 (char 0)，感谢帮我测试的人tg上的 @Koo Natsuki 耐心帮我测试一下午，真的感谢
 
-## 感兴趣可以给我点个star  不用拉配置文件了，运行config.py就会生成配置文件的了，把cookie填进去就好了
+## 不用拉配置文件了，运行config.py就会生成配置文件的了，把cookie填进去就好了
 
 6.8 新配置，可自定义每个视频投币数量 1-2之间 ，每个py都可运行，user可查看cookie是否读出来，method可查看cookie有效 多账户如图：
 ![image](https://user-images.githubusercontent.com/63834404/172534292-379beceb-fa2d-42dc-ab4e-39cb965181fc.png)
