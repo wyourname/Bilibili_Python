@@ -8,14 +8,7 @@
 会青龙拉库命令的可以告诉我我还不会配置😂
 
 ## 请求失败，错误信息：Expecting value: line 1 column 1 (char 0) 该bug并非我的错，我也没办法弄，目前你只能选择更换python版本尝试,我也很疑惑出问题在哪里，我自己跑没问题的啊
-### 方法如下：在alpine里面输入以下指令 
-curl -fsSL https://raw.githubusercontent.com/shufflewzc/QLDependency/main/Shell/QLOneKeyDependency.sh | sh
-第二条指令：ln -s /usr/bin/python3.9 /usr/bin/python
-第三条指令： python -m ensurepip  
-第四条查看python版本：python --version           因为我换好python版本了，所以省略第二第三指令
-
-![image](https://user-images.githubusercontent.com/63834404/173025386-e3cafe03-05f4-4596-a548-f35ef5368d24.png)
-![image](https://user-images.githubusercontent.com/63834404/173025446-7eaf32e1-e43a-4ca9-bb5e-0a0f357e1ed4.png)
+## 为了排除问题，请大家跑bug_ctime.py,将日志发给我可否
 
 ## 感兴趣可以给我点个star  不用拉配置文件了，运行config.py就会生成配置文件的了，把cookie填进去就好了
 
