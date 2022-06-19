@@ -1,3 +1,4 @@
+import re
 import sys
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 from Bilibili_User import *
@@ -110,9 +111,20 @@ class Refactor_Bilibili_CTime(Basic):
         url = self.url_check % room_id
         tx_info = self.get_requests(url)
         if tx_info['code'] == 0:
-            self.logger.info("【奖品】是：%s,数量为：%s,【需要条件】：%s" % (
-                tx_info['data']['award_name'], tx_info['data']['award_num'], tx_info['data']['require_text']))
-            self.TX_Join(tx_info['data']['id'], room_id, gid, uid, csrf)
+            result = self.screen_condition(tx_info['data']['award_name'])
+            if result:
+                self.logger.info("筛选去掉【奖品】：%s" % tx_info['data']['award_name'])
+            else:
+                self.logger.info("【奖品】：%s ---【条件】: %s" % (tx_info['data']['award_name'], tx_info['data']['require_text']))
+                self.TX_Join(tx_info['data']['id'], room_id, gid, uid, csrf)
+
+    @staticmethod
+    def screen_condition(condition):
+        pattern = re.compile(r'大航海|舰长|.?车车?|手照')
+        if pattern.findall(condition):
+            return True
+        else:
+            return False
 
     def TX_Join(self, rid, room_id, gid, uid, csrf):
         data = {'id': rid, 'platfrom': 'pc', 'roomid': room_id, 'csrf': csrf}
@@ -137,8 +149,6 @@ class Refactor_Bilibili_CTime(Basic):
 
     def decorate(self):
         self.logger.info("脚本由GitHub@王权富贵233提供")
-        self.logger.info('如果你碰到请求失败，错误信息：Expecting value: line 1 column 1 (char 0)  该错误')
-        self.logger.info("请到我的github查看解决方案：https://github.com/wangquanfugui233/Bilibili_Python")
         self.logger.info("该脚本仅供学习交流，仅供学习参考，仅供学习参考")
         self.logger.info("脚本不保证稳定性，请自行测试")
 
