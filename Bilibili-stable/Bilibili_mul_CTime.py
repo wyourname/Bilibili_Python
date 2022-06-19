@@ -120,7 +120,7 @@ class Refactor_Bilibili_CTime(Basic):
 
     @staticmethod
     def screen_condition(condition):
-        pattern = re.compile(r'大航海|舰长|.?车车?|手照|代金券')
+        pattern = re.compile(r'大航海|舰长|.?车车?|手照|代金券|优惠券')
         if pattern.findall(condition):
             return True
         else:
