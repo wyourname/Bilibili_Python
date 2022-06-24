@@ -127,9 +127,12 @@ class Refactor_Bilibili_CTime(Basic):
             return False
 
     def black_screen(self, uid):
-        for i in self.black_list:
-            if i == uid:
-                return True
+        if self.black_list:
+            for i in self.black_list:
+                if i == uid:
+                    return True
+            else:
+                return False
         else:
             return False
 
