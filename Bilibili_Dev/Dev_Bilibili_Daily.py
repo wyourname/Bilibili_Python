@@ -143,8 +143,6 @@ class CopeMethod(Basic):
 
     def decorate(self):
         self.logger.info("该脚本由GitHub@王权富贵233制作")
-        self.logger.info('如果你碰到请求失败，错误信息：Expecting value: line 1 column 1 (char 0)  该错误')
-        self.logger.info("请到我的github查看解决方案：https://github.com/wangquanfugui233/Bilibili_Python")
         self.logger.info("脚本依赖于requests，和Bilibili.User.py")
         self.logger.info("每天自动任务65经验,可以自行设置投币数量,推荐cron 1 1 * * *")
         self.logger.info("✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️")
