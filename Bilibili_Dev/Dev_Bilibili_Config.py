@@ -185,19 +185,19 @@ class Config:
         self.logger.info('简化多用户步骤，只需要在config文件中添加--> ,{"Cookie": "这里是你的cookie"}  《再》运行一次本文件即可')
         self.logger.info("新增黑白名单功能，在black_list和white_list中添加用户ID即可")
         self.logger.info("黑名单是指你不想关注的用户，白名单是指你想保留关注的用户")
-        # if self.create_file():
-        #     self.logger.info("配置文件创建成功,请前往添加Cookie")
-        # else:
-        #     self.update_config()
-        #     cookies = self.fetch_cookies()
-        #     if len(cookies) > 0:
-        #         self.logger.info("cookie检查成功")
-        #         if len(self.fetch_cookies()) == len(self.fetch_csrf(cookies)) == len(self.fetch_drop_coin()):
-        #             self.logger.info("配置文件正确")
-        #         else:
-        #             self.insert_data(len(self.fetch_cookies()))
-        #     else:
-        #         self.logger.info("cookie检查失败")
+        if self.create_file():
+            self.logger.info("配置文件创建成功,请前往添加Cookie")
+        else:
+            self.update_config()
+            cookies = self.fetch_cookies()
+            if len(cookies) > 0:
+                self.logger.info("cookie检查成功")
+                if len(self.fetch_cookies()) == len(self.fetch_csrf(cookies)) == len(self.fetch_drop_coin()):
+                    self.logger.info("配置文件正确")
+                else:
+                    self.insert_data(len(self.fetch_cookies()))
+            else:
+                self.logger.info("cookie检查失败")
 
 
 if __name__ == '__main__':
