@@ -55,7 +55,7 @@ class Refactor_Bilibili_CTime(Basic):
         for i in all_area['data']:
             self.logger.info('*********>正在扫描《' + i['name'] + "》<*********")
             area_id, area_name = self.cope_min_area(i['list'])
-            task = self.pool.submit(self.cycle_min_area, i['id'], area_id, area_name, gid, csrf)
+            task = self.pool.submit(self.cycle_min_area, i['id'], area_id, gid, csrf)
             tasklist.append(task)
         wait(tasklist, return_when=ALL_COMPLETED)
         self.logger.info('*********>全部扫描完成<*********')
@@ -69,9 +69,8 @@ class Refactor_Bilibili_CTime(Basic):
             data_name.append(i['name'])
         return data_id, data_name
 
-    def cycle_min_area(self, parent_id, area_id, area_name, gid, csrf):
+    def cycle_min_area(self, parent_id, area_id, gid, csrf):
         for i in area_id:
-            self.logger.info('      ->正在扫描' + area_name[area_id.index(i)] + "<-")
             self.cycle_page(parent_id, i, gid, csrf)
 
     def cycle_page(self, parent_id, area_id, gid, csrf):
@@ -80,13 +79,12 @@ class Refactor_Bilibili_CTime(Basic):
             page += 1
             url_page = self.url_all % (parent_id, area_id, page)
             if page > self.max_page:
-                self.logger.info('      ->Scan reached maximum number of pages, stop<-')
+                self.logger.info('-------->到达设置最大页数<---------')
                 break
             page_info = self.get_requests(url_page)
             if page_info['data']['list']:
                 self.scan_room(page_info['data']['list'], gid, csrf)
             else:
-                self.logger.info('      ->Scan reached the end of the page, stop<-')
                 break
 
     def scan_room(self, page_info, gid, csrf):
@@ -112,15 +110,16 @@ class Refactor_Bilibili_CTime(Basic):
         tx_info = self.get_requests(url)
         if tx_info['code'] == 0:
             result = self.screen_condition(tx_info['data']['award_name'])
-            if result:
-                self.logger.info("筛选去掉【奖品】：%s" % tx_info['data']['award_name'])
+            require = self.screen_condition(tx_info['data']['require_text'])
+            if result or require:
+                self.logger.info("《不符合条件的奖品或要求》：%s--%s" % (tx_info['data']['award_name'], tx_info['data']['require_text']))
             else:
                 self.logger.info("【奖品】：%s ---【条件】: %s" % (tx_info['data']['award_name'], tx_info['data']['require_text']))
                 self.TX_Join(tx_info['data']['id'], room_id, gid, uid, csrf)
 
     @staticmethod
     def screen_condition(condition):
-        pattern = re.compile(r'大航海|舰长|.?车车?|手照|代金券|优惠券')
+        pattern = re.compile(r'大航海|舰长|.?车车?|手照|代金券|优惠券|勋章')
         if pattern.findall(condition):
             return True
         else:
@@ -148,7 +147,13 @@ class Refactor_Bilibili_CTime(Basic):
         if join_info['code'] == 0:
             self.logger.info("【参加天选抽奖成功】,等待2秒改变用户组")
             time.sleep(2)
-            self.Move_User(gid, uid, csrf)
+            if self.Move_User(gid, uid, csrf):
+                self.logger.info("【改变用户组成功】")
+            else:
+                self.logger.info("《改变用户组失败》,等待1秒再改变")
+                time.sleep(1)
+                self.Move_User(gid, uid, csrf)
+
         else:
             self.logger.info(join_info['message'])
 
@@ -156,14 +161,16 @@ class Refactor_Bilibili_CTime(Basic):
         data = {'beforeTagids': 0, 'afterTagids': gid, 'fids': uid, 'csrf': csrf}
         Move_info = self.post_requests(self.url_relationship, data)
         if Move_info['code'] == 0:
-            self.logger.info("【更改分组成功】")
+            return True
         else:
             self.logger.info(Move_info['message'])
+            return False
 
     def decorate(self):
         self.logger.info("脚本由GitHub@王权富贵233提供")
         self.logger.info("该脚本仅供学习交流，仅供学习参考，仅供学习参考")
-        self.logger.info("脚本不保证稳定性，请自行测试")
+        self.logger.info("脚本现已支持黑名单，前往Bilibili_config.json添加黑名单")
+        self.logger.info("格式：black_list = [uid1,uid2,uid3,...,...] uid为数字，逗号为英文逗号")
 
     def run(self):
         self.decorate()

@@ -4,6 +4,7 @@ from Dev_Bilibili_Daily import *
 class Unfollows(Basic):
     def __init__(self):
         super().__init__()
+        self.white_list = self.fetch_white_list()
 
     def check_group(self, csrf):
         self.logger.info('检查是否有天选时刻分组')
@@ -36,6 +37,14 @@ class Unfollows(Basic):
                 userid, uname = self.cope_User(group_info)
                 self.cyc_unfollow(userid, uname, csrf)
 
+    def screen_white_list(self, userid):
+        if self.white_list is None:
+            return False
+        if userid in self.white_list:
+            return True
+        else:
+            return False
+
     @staticmethod
     def cope_User(group_info):
         mid = []
@@ -47,8 +56,12 @@ class Unfollows(Basic):
 
     def cyc_unfollow(self, mid, uname, csrf):
         for i in range(len(mid)):
-            self.unfollow(mid[i], csrf)
-            self.logger.info('取关: %s' % uname[i])
+            if self.screen_white_list(mid[i]):
+                self.logger.info('【%s】在白名单中，跳过' % uname[i])
+                continue
+            else:
+                self.unfollow(mid[i], csrf)
+                self.logger.info('取关: 【%s】' % uname[i])
 
     def unfollow(self, mid, csrf):
         data = {'fid': mid, 'act': 2, 're_src': 11, 'csrf': csrf}
@@ -62,9 +75,10 @@ class Unfollows(Basic):
             self.logger.info('取关失败')
 
     def run(self):
-        self.logger.info('本脚本依赖于Bilibili_User.py，确保文件在同一目录下')
-        self.logger.info('脚本为取关天选时刻分组的up主')
-        self.logger.info("*" * 5 + "开始取关" + "*" * 5)
+        self.logger.info('脚本支持白名单，可以在Bilibili_config.json设置不取关的用户ID')
+        self.logger.info('白名单格式: [uid1, uid2, uid3, ...] uid为数字，逗号为英文逗号')
+        self.logger.info('脚本作者为github@wangquanfugui233')
+        self.logger.info("*" * 6 + "开始取关" + "*" * 6)
         for i in range(len(self.cookies)):
             self.headers['cookie'] = self.cookies[i]
             self.check_group(self.csrfs[i])

@@ -60,10 +60,11 @@ class Basic(Config):
             self.logger.info(data['message'])
 
     def user_info(self):
-        self.logger.info("**********用户信息**********")
+        self.logger.info("脚本作者：github@wangquanfugui233")
         self.logger.info("该脚本为验证你的cookie是否有效，如果cookie无效，请检查cookie是否过期")
         self.logger.info("脚本包含了日常任务函数，如果你不需要日常任务，请删除该脚本和Bilibili_Daily.py文件")
         for i in range(len(self.cookies)):
+            self.logger.info("**********用户信息**********")
             self.headers['Cookie'] = self.cookies[i]
             user = self.get_requests(self.url)
             self.cope_info(user)
