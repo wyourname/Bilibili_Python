@@ -11,6 +11,8 @@
 ## 修复了 Expecting value: line 1 column 1 (char 0)，感谢帮我测试的人tg上的 @Koo Natsuki 耐心帮我测试一下午，真的感谢
 
 ## 不用拉配置文件了，运行config.py就会生成配置文件的了，把cookie填进去就好了
+6.29 加入了天选中奖推送，推荐时间运行比天选晚半小时
+
 最近发现daily确实难用各位有什么推荐的建议可以说说，可以改改
 
 6.25 新增dev版本，有黑白名单功能 拉库 ql repo https://hub.fastgit.xyz/wangquanfugui233/Bilibili_Python.git "Dev_Bilibili_"
