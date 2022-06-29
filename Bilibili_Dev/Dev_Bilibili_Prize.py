@@ -52,7 +52,7 @@ class prize(Basic):
         print('加入白名单成功')
 
     def ql_send(self):
-        if self.msg != '':
+        if self.msg != '详细信息:\n':
             send('Bilibili天选时刻通知', self.msg)
         else:
             self.logger.info('今天没有中奖')
