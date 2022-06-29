@@ -49,6 +49,7 @@ class Config:
         self.url_relationship = "http://api.bilibili.com/x/relation/tags/moveUsers"
         self.url_group = "https://api.bilibili.com/x/relation/tags"
         self.create_url = "https://api.bilibili.com/x/relation/tag/create"
+        self.prize = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/AwardRecord"
         logging.basicConfig(level=logging.INFO, format='%(message)s')
         self.logger = logging.getLogger(__name__)
 

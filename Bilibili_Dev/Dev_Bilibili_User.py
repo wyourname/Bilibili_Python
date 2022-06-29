@@ -18,7 +18,6 @@ class Basic(Config):
             urllib3.disable_warnings()
             response = requests.get(url, headers=self.headers, verify=False)
             if response.status_code == 200:
-                response.close()
                 get_data = json.loads(response.text)
                 return get_data
             else:
@@ -34,7 +33,6 @@ class Basic(Config):
             urllib3.disable_warnings()
             response = requests.post(url, headers=self.headers, data=data, verify=False)
             if response.status_code == 200:
-                response.close()
                 post_data = json.loads(response.text)
                 return post_data
             else:
