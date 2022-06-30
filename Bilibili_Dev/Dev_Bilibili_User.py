@@ -14,6 +14,7 @@ class Basic(Config):
         self.coin = self.fetch_drop_coin()
 
     def get_requests(self, url):
+        time.sleep(1)
         try:
             urllib3.disable_warnings()
             response = requests.get(url, headers=self.headers, verify=False)
@@ -27,6 +28,7 @@ class Basic(Config):
             self.logger.error('请求失败，错误信息：{}'.format(e))
 
     def post_requests(self, url, data):
+        time.sleep(1)
         try:
             self.headers['method'] = 'POST'
             self.headers['Content-Type'] = 'application/x-www-form-urlencoded'

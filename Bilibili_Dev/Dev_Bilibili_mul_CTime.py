@@ -1,3 +1,4 @@
+import random
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
@@ -150,8 +151,8 @@ class Refactor_Bilibili_CTime(Basic):
             if self.Move_User(gid, uid, csrf):
                 self.logger.info("【改变用户组成功】")
             else:
-                self.logger.info("《改变用户组失败》,等待1秒再改变")
-                time.sleep(1)
+                self.logger.info("《改变用户组失败》,等待2秒再改变")
+                time.sleep(2)
                 self.Move_User(gid, uid, csrf)
 
         else:
@@ -176,6 +177,7 @@ class Refactor_Bilibili_CTime(Basic):
         self.decorate()
         for i in range(len(self.cookies)):
             self.headers['Cookie'] = self.cookies[i]
+            self.headers['user-agent'] = random.choice(self.ua_list)
             user_info = self.get_requests(self.url)
             self.cope_info(user_info)
             self.check_group(self.csrfs[i])
