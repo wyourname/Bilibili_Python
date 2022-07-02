@@ -1,3 +1,4 @@
+import random
 import re
 import sys
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
@@ -9,6 +10,7 @@ class Refactor_Bilibili_CTime(Basic):
         super().__init__()
         self.max_page = self.fetch_page()
         self.max_thread = self.fetch_thread()
+        self.black_list = self.fetch_black_list()
         try:
             self.pool = ThreadPoolExecutor(max_workers=self.max_thread)
         except ValueError as e:
@@ -50,15 +52,15 @@ class Refactor_Bilibili_CTime(Basic):
         self.cope_all_area(all_area, gid, csrf)
 
     def cope_all_area(self, all_area, gid, csrf):
-        tasklist = []
         for i in all_area['data']:
-            self.logger.info('*********>正在扫描《' + i['name'] + "》<*********")
+            self.logger.info('正在扫描：《' + i['name'] + "》")
             area_id, area_name = self.cope_min_area(i['list'])
-            task = self.pool.submit(self.cycle_min_area, i['id'], area_id, area_name, gid, csrf)
-            tasklist.append(task)
-            # self.cycle_min_area(i['id'], area_id, area_name, gid, csrf)
-        wait(tasklist, return_when=ALL_COMPLETED)
-        self.logger.info('*********>全部扫描完成<*********')
+            self.cycle_min_area(i['id'], area_name, area_id, gid, csrf)
+            self.logger.info('-->【'+i['name'] + '】：扫描完毕---随机休息2-5分钟')
+            time.sleep(random.randint(60*2, 60*5))
+        #     task = self.pool.submit(self.cycle_min_area, i['id'], area_id, gid, csrf)
+        #     tasklist.append(task)
+        # wait(tasklist, return_when=ALL_COMPLETED)
 
     @staticmethod
     def cope_min_area(data1):
@@ -69,10 +71,15 @@ class Refactor_Bilibili_CTime(Basic):
             data_name.append(i['name'])
         return data_id, data_name
 
-    def cycle_min_area(self, parent_id, area_id, area_name, gid, csrf):
+    def cycle_min_area(self, parent_id, area_name, area_id, gid, csrf):
+        tasklist = []
         for i in area_id:
-            self.logger.info('      ->正在扫描' + area_name[area_id.index(i)] + "<-")
-            self.cycle_page(parent_id, i, gid, csrf)
+            # self.logger.info('开始扫描《' + area_name[area_id.index(i)] + "》")
+            task = self.pool.submit(self.cycle_page, parent_id, i, gid, csrf)
+            tasklist.append(task)
+        wait(tasklist, return_when=ALL_COMPLETED)
+
+        # self.cycle_page(parent_id, i, gid, csrf)
 
     def cycle_page(self, parent_id, area_id, gid, csrf):
         page = 0
@@ -80,13 +87,12 @@ class Refactor_Bilibili_CTime(Basic):
             page += 1
             url_page = self.url_all % (parent_id, area_id, page)
             if page > self.max_page:
-                self.logger.info('      ->Scan reached maximum number of pages, stop<-')
+                self.logger.info('-------->到达设置最大页数<---------')
                 break
             page_info = self.get_requests(url_page)
             if page_info['data']['list']:
                 self.scan_room(page_info['data']['list'], gid, csrf)
             else:
-                self.logger.info('      ->Scan reached the end of the page, stop<-')
                 break
 
     def scan_room(self, page_info, gid, csrf):
@@ -112,30 +118,52 @@ class Refactor_Bilibili_CTime(Basic):
         tx_info = self.get_requests(url)
         if tx_info['code'] == 0:
             result = self.screen_condition(tx_info['data']['award_name'])
-            if result:
-                self.logger.info("筛选去掉【奖品】：%s" % tx_info['data']['award_name'])
+            require = self.screen_condition(tx_info['data']['require_text'])
+            if result or require:
+                self.logger.info(
+                    "《不符合条件的奖品或要求》：%s--%s" % (tx_info['data']['award_name'], tx_info['data']['require_text']))
             else:
-                self.logger.info("【奖品】：%s ---【条件】: %s" % (tx_info['data']['award_name'], tx_info['data']['require_text']))
+                self.logger.info(
+                    "【奖品】：%s ---【条件】: %s" % (tx_info['data']['award_name'], tx_info['data']['require_text']))
                 self.TX_Join(tx_info['data']['id'], room_id, gid, uid, csrf)
 
     @staticmethod
     def screen_condition(condition):
-        pattern = re.compile(r'大航海|舰长|.?车车?|手照|代金券|优惠券')
+        pattern = re.compile(r'大航海|舰长|.?车车?|手照|代金券|优惠券|勋章')
         if pattern.findall(condition):
             return True
         else:
             return False
 
+    def black_screen(self, uid):
+        if self.black_list:
+            for i in self.black_list:
+                if i == uid:
+                    return True
+            else:
+                return False
+        else:
+            return False
+
     def TX_Join(self, rid, room_id, gid, uid, csrf):
-        data = {'id': rid, 'platfrom': 'pc', 'roomid': room_id, 'csrf': csrf}
-        Join_info = self.post_requests(self.url_tx, data)
-        self.cope_Join(Join_info, gid, uid, csrf)
+        if self.black_screen(uid):
+            self.logger.info("【UID】跳过：%s ---【原因】: 在设置的黑名单中" % uid)
+        else:
+            data = {'id': rid, 'platfrom': 'pc', 'roomid': room_id, 'csrf': csrf}
+            Join_info = self.post_requests(self.url_tx, data)
+            self.cope_Join(Join_info, gid, uid, csrf)
 
     def cope_Join(self, join_info, gid, uid, csrf):
         if join_info['code'] == 0:
             self.logger.info("【参加天选抽奖成功】,等待2秒改变用户组")
             time.sleep(2)
-            self.Move_User(gid, uid, csrf)
+            if self.Move_User(gid, uid, csrf):
+                self.logger.info("【改变用户组成功】")
+            else:
+                self.logger.info("《改变用户组失败》,等待2秒再改变")
+                time.sleep(2)
+                self.Move_User(gid, uid, csrf)
+
         else:
             self.logger.info(join_info['message'])
 
@@ -143,19 +171,22 @@ class Refactor_Bilibili_CTime(Basic):
         data = {'beforeTagids': 0, 'afterTagids': gid, 'fids': uid, 'csrf': csrf}
         Move_info = self.post_requests(self.url_relationship, data)
         if Move_info['code'] == 0:
-            self.logger.info("【更改分组成功】")
+            return True
         else:
             self.logger.info(Move_info['message'])
+            return False
 
     def decorate(self):
         self.logger.info("脚本由GitHub@王权富贵233提供")
         self.logger.info("该脚本仅供学习交流，仅供学习参考，仅供学习参考")
-        self.logger.info("脚本不保证稳定性，请自行测试")
+        self.logger.info("脚本现已支持黑名单，前往Bilibili_config.json添加黑名单")
+        self.logger.info("格式：black_list = [uid1,uid2,uid3,...,...] uid为数字，逗号为英文逗号")
 
     def run(self):
         self.decorate()
         for i in range(len(self.cookies)):
             self.headers['Cookie'] = self.cookies[i]
+            self.headers['user-agent'] = random.choice(self.ua_list)
             user_info = self.get_requests(self.url)
             self.cope_info(user_info)
             self.check_group(self.csrfs[i])

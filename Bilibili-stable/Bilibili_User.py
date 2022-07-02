@@ -1,6 +1,6 @@
 import json
 import time
-
+import urllib3
 from Bilibili_Config import Config
 import requests
 import random
@@ -10,17 +10,19 @@ class Basic(Config):
     def __init__(self):
         super().__init__()
         self.cookies = self.fetch_cookies()
-        self.csrfs = self.fetch_csrf()
+        self.csrfs = self.fetch_csrf(self.cookies)
         self.coin = self.fetch_drop_coin()
 
     def get_requests(self, url):
         try:
-            response = requests.get(url, headers=self.headers, timeout=5)
+            urllib3.disable_warnings()
+            time.sleep(1.5)
+            response = requests.get(url, headers=self.headers, verify=False)
             if response.status_code == 200:
                 get_data = json.loads(response.text)
                 return get_data
             else:
-                self.logger.error('请求失败：{}'.format(response.content))
+                self.logger.error(json.loads(response.text)['message'])
                 return None
         except Exception as e:
             self.logger.error('请求失败，错误信息：{}'.format(e))
@@ -29,12 +31,14 @@ class Basic(Config):
         try:
             self.headers['method'] = 'POST'
             self.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-            response = requests.post(url, headers=self.headers, data=data, timeout=5)
+            urllib3.disable_warnings()
+            time.sleep(1.5)
+            response = requests.post(url, headers=self.headers, data=data, verify=False)
             if response.status_code == 200:
                 post_data = json.loads(response.text)
                 return post_data
             else:
-                self.logger.error('请求失败：{}'.format(response.content))
+                self.logger.error(json.loads(response.text)['message'])
                 return None
         except Exception as e:
             self.logger.error('请求失败，错误信息：{}'.format(e))
@@ -56,12 +60,11 @@ class Basic(Config):
             self.logger.info(data['message'])
 
     def user_info(self):
-        self.logger.info("**********用户信息**********")
-        self.logger.info('如果你碰到请求失败，错误信息：Expecting value: line 1 column 1 (char 0)  该错误')
-        self.logger.info("请到我的github查看解决方案：https://github.com/wangquanfugui233/Bilibili_Python")
+        self.logger.info("脚本作者：github@wangquanfugui233")
         self.logger.info("该脚本为验证你的cookie是否有效，如果cookie无效，请检查cookie是否过期")
         self.logger.info("脚本包含了日常任务函数，如果你不需要日常任务，请删除该脚本和Bilibili_Daily.py文件")
         for i in range(len(self.cookies)):
+            self.logger.info("**********用户信息**********")
             self.headers['Cookie'] = self.cookies[i]
             user = self.get_requests(self.url)
             self.cope_info(user)
