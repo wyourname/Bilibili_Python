@@ -52,15 +52,16 @@ class Refactor_Bilibili_CTime(Basic):
         self.cope_all_area(all_area, gid, csrf)
 
     def cope_all_area(self, all_area, gid, csrf):
+        now = time.strftime("%H:%M:%S", time.localtime())
         for i in all_area['data']:
-            self.logger.info('正在扫描：《' + i['name'] + "》")
+            self.logger.info('【%s】扫描---》：⟪ %s ⟫' % (now, i['name']))
             area_id, area_name = self.cope_min_area(i['list'])
             self.cycle_min_area(i['id'], area_name, area_id, gid, csrf)
-            self.logger.info('-->【'+i['name'] + '】：扫描完毕---随机休息2-5分钟')
-            time.sleep(random.randint(60*2, 60*5))
-        #     task = self.pool.submit(self.cycle_min_area, i['id'], area_id, gid, csrf)
-        #     tasklist.append(task)
-        # wait(tasklist, return_when=ALL_COMPLETED)
+            if all_area['data'][-1] == i:
+                self.logger.info('-------->到达最后一个分区，结束<---------')
+                break
+            self.logger.info('-->【' + i['name'] + '】：扫描完毕---随机休息1-2分钟')
+            time.sleep(random.randint(60 * 1, 60 * 2))
 
     @staticmethod
     def cope_min_area(data1):
@@ -75,24 +76,25 @@ class Refactor_Bilibili_CTime(Basic):
         tasklist = []
         for i in area_id:
             # self.logger.info('开始扫描《' + area_name[area_id.index(i)] + "》")
-            task = self.pool.submit(self.cycle_page, parent_id, i, gid, csrf)
+            task = self.pool.submit(self.cycle_page, parent_id, area_name[area_id.index(i)], i, gid, csrf)
             tasklist.append(task)
         wait(tasklist, return_when=ALL_COMPLETED)
 
-        # self.cycle_page(parent_id, i, gid, csrf)
-
-    def cycle_page(self, parent_id, area_id, gid, csrf):
+    def cycle_page(self, parent_id, area_name, area_id, gid, csrf):
+        now = time.strftime("%H:%M:%S", time.localtime())
+        self.logger.info('【%s】扫描---》：⟦ %s ⟧' % (now, area_name))
         page = 0
         while True:
             page += 1
             url_page = self.url_all % (parent_id, area_id, page)
             if page > self.max_page:
-                self.logger.info('-------->到达设置最大页数<---------')
+                self.logger.info('⟦ %s ⟧到达设置最大页数' % area_name)
                 break
             page_info = self.get_requests(url_page)
             if page_info['data']['list']:
                 self.scan_room(page_info['data']['list'], gid, csrf)
             else:
+                self.logger.info('扫描⟦ %s ⟧结束' % area_name)
                 break
 
     def scan_room(self, page_info, gid, csrf):

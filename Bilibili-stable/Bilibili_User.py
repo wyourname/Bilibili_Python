@@ -1,9 +1,7 @@
 import json
 import time
-import urllib3
 from Bilibili_Config import Config
 import requests
-import random
 
 
 class Basic(Config):
@@ -15,9 +13,8 @@ class Basic(Config):
 
     def get_requests(self, url):
         try:
-            urllib3.disable_warnings()
             time.sleep(1.5)
-            response = requests.get(url, headers=self.headers, verify=False)
+            response = requests.get(url, headers=self.headers)
             if response.status_code == 200:
                 get_data = json.loads(response.text)
                 return get_data
@@ -31,9 +28,8 @@ class Basic(Config):
         try:
             self.headers['method'] = 'POST'
             self.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-            urllib3.disable_warnings()
             time.sleep(1.5)
-            response = requests.post(url, headers=self.headers, data=data, verify=False)
+            response = requests.post(url, headers=self.headers, data=data)
             if response.status_code == 200:
                 post_data = json.loads(response.text)
                 return post_data
