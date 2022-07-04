@@ -17,31 +17,6 @@
 
 6.25 新增dev版本，有黑白名单功能 拉库 ql repo https://hub.fastgit.xyz/wangquanfugui233/Bilibili_Python.git "Dev_Bilibili_"
 
-6.19 增加筛选功能，删除单线程
-
-6.16 修复只能取关50个up主，取消设置取关数量，因为垃圾开关无用
-
-6.8 新配置，可自定义每个视频投币数量 1-2之间 ，每个py都可运行，user可查看cookie是否读出来，method可查看cookie有效 多账户如图：
-![image](https://user-images.githubusercontent.com/63834404/172534292-379beceb-fa2d-42dc-ab4e-39cb965181fc.png)
-
-6.7 修复了天选部分bug,新增bug，待会更新daily bug
-
-6.3 天选多线程版
-
-6.2 修改了文件名称，小bug依旧没修复
-
-6.1 添加天选时刻，还没有分组功能过几天放假赶出来，小bug多，加入直播签到
-
-5.29 修复小bug,今天写天选
-
-改播放视频为动态视频随机播放一个
- 
-使用方法：青龙就挂着Daily.py 这个文件就行了定时随意，把cookie填进Bilibili_config.json,json文件和py都要在同一个目录才行
-
-目前用于测试查看，后续添加天选时刻自动筛选关注抽奖,目前只有投币和转发任务
-
-使用方法：json文件写入bilibili的cookie，多账户就多添加一个"cookie":"",如下：
-
-不需要多账户就删掉一个，默认配置一个
+其他再改了再改了
 
 api来源：bilibili-API-collect   和  bilibili.com
