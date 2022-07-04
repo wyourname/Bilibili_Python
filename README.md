@@ -26,12 +26,6 @@
 
 6.7 修复了天选部分bug,新增bug，待会更新daily bug
 
-6.6 删除原来的天选，新的配置，线程可设置1到7，最好就是3避免并发冲突，代码重构了一部分，可设置最大扫描页数 如图 ![image](https://user-images.githubusercontent.com/63834404/172145153-d9772e37-55df-4455-b6e3-e616fdc32469.png)
-
-
-6.4 新增取关up主，配置文件更新，在refactor里看，需要取关多少就写多少，多账户同cookie格式填两个num 如图![image](https://user-images.githubusercontent.com/63834404/171981480-0dff8dea-f96f-4aef-82e0-7e85e333de39.png)
-
-
 6.3 天选多线程版
 
 6.2 修改了文件名称，小bug依旧没修复
