@@ -6,7 +6,7 @@
 有建议的功能可以告诉我我尽量加上
 新手，不喜勿喷，不喜欢用觉得垃圾可以不用，不用骂我垃圾，写的垃圾是学艺不精ok
 
-### 加入了限制
+### 改了，不然跑不了
 
 ## 使用方法：
 拉库完毕后，请跑一次Bilibili_cofig.py ，会自动生成json文件，把cookie填在对应位置就行了，修改投币数量为coin:1或者2，如图：
@@ -33,7 +33,7 @@
 
 最近发现daily确实难用各位有什么推荐的建议可以说说，可以改改
 
-6.25 新增dev版本，有黑白名单功能 拉库 ql repo https://hub.fastgit.xyz/wangquanfugui233/Bilibili_Python.git "Bilibili_"
+6.25 新版本，有黑白名单功能 拉库 ql repo https://hub.fastgit.xyz/wangquanfugui233/Bilibili_Python.git "Bilibili_"
 
 其他再改了再改了
 
