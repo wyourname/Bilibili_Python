@@ -8,9 +8,20 @@
 
 ### 加入了限制
 
-## 修复了 Expecting value: line 1 column 1 (char 0)，感谢帮我测试的人tg上的 @Koo Natsuki 耐心帮我测试一下午，真的感谢
+## 使用方法：
+拉库完毕后，请跑一次Bilibili_cofig.py ，会自动生成json文件，把cookie填在对应位置就行了，修改投币数量为coin:1或者2，如图：
+![image](https://user-images.githubusercontent.com/63834404/177083087-42d2cd19-d519-45d7-99ef-acc0eb6fa7a4.png)
+扫描天选页数：max_page
+扫描线程数：max_thread
+黑名单：black_list  就是你不想关注的up主mid放在这里，一定要是英文逗号
+白名单：white_list 就是你不想取关的，和中奖的up主mid会存在这里，一定要是英文逗号
+多账号格式：---》：{"Cookie": ""},{"Cookie": ""},{"Cookie": ""}.....  一定要是英文逗号
+添加完之后再跑一次Bilibili_cofig.py即可
 
 ## 不用拉配置文件了，运行config.py就会生成配置文件的了，把cookie填进去就好了
+
+
+
 6.29 加入了天选中奖推送，推荐时间运行比天选晚半小时，推荐用dev
 
 最近发现daily确实难用各位有什么推荐的建议可以说说，可以改改
