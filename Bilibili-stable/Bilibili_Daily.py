@@ -1,61 +1,183 @@
-import time
+import random
 
 from Bilibili_User import *
 
 
-class CopeMethod(Basic):
+class Daily(Basic):
     def __init__(self):
         super().__init__()
+        self.specify = self.fetch_favorite()
 
-    def cope_dynamic(self, data):
-        title = []
-        bv = []
-        if data['code'] == 0:
-            for i in data['data']['items']:
-                if i['basic']['comment_type'] == 1:
-                    if i['modules']['module_dynamic']['major']['type'] == 'MAJOR_TYPE_ARCHIVE':
-                        title.append(i['modules']['module_dynamic']['major']['archive']['title'])
-                        bv.append(i['modules']['module_dynamic']['major']['archive']['bvid'])
+    def check_group(self):
+        follows = self.get_requests(self.url9)
+        if follows['code'] == 0:
+            for i in follows['data']:
+                if i['tagid'] == 0:
+                    return i['count']
+        else:
+            return None
+
+    def uid_info(self, coin, csrf):
+        count = self.check_group()
+        if count == 0:
+            self.logger.info("默认分组为空")
+        elif 55 >= count > 0:
+            url = self.url10 + '?tagid=0'
+            self.fetch_uid(url, coin, csrf)
+        else:
+            page = random.randint(1, int(count / 50) + 1)
+            url = self.url10 + '?tagid=0&pn=%s' % page
+            self.fetch_uid(url, coin, csrf)
+
+    def fetch_uid(self, url, coin, csrf):
+        if len(self.specify) > 0:
+            num = 0
+            while True:
+                mid = random.choice(self.specify)
+                self.logger.info("你选择了指定用户投币，uid：%s" % mid)
+                bvid_list, video_title = self.cyc_search_uid(mid)
+                if bvid_list is not None:
+                    if self.cope_video(bvid_list, video_title, coin, csrf):
+                        num += 1
+                    else:
+                        pass
+                else:
+                    self.logger.info("没有视频")
+                if num == 5:
+                    break
+            if num < 5:
+                self.logger.info("指定up没有可投币的视频，随机投币")
+                self.cycle_uid(url, coin, csrf)
+        else:
+            self.cycle_uid(url, coin, csrf)
+
+    def other_task(self, csrf):
+        url = self.url10 + '?tagid=0'
+        group_info = self.get_requests(url)
+        mid_list, uname_list = self.list_uid(group_info['data'])
+        mid = random.choice(mid_list)
+        self.logger.info("随机选择了用户：" + uname_list[mid_list.index(mid)])
+        bvid_list, video_title = self.cyc_search_uid(mid)
+        if bvid_list is not None:
+            video = random.choice(bvid_list)
+            self.play_video(video, video_title[bvid_list.index(video)])
+            self.share_dynamic(video_title[bvid_list.index(video)], video, csrf)
+            return True
+        else:
+            return False
+
+    def cycle_uid(self, url, coin, csrf):
+        group_info = self.get_requests(url)
+        mid_list, uname_list = self.list_uid(group_info['data'])
+        num = 0
+        while True:
+            mid = random.choice(mid_list)
+            self.logger.info("本次投币对象："+uname_list[mid_list.index(mid)])
+            bvid_list, video_title = self.cyc_search_uid(mid)
+            if bvid_list is not None:
+                if self.cope_video(bvid_list, video_title, coin, csrf):
+                    num += 1
                 else:
                     pass
-            return title, bv
-        elif data['code'] == -101:
-            self.logger.info(data['message'] + "请检查cookie")
-        else:
-            self.logger.info(data['message'])
+            else:
+                self.logger.info("没有视频")
+            if num == 5:
+                break
 
-    def check_bv_num(self, bv, title, num, csrf):
-        if len(bv) == 0:
-            self.logger.info('没有发现可投币视频，多关注几个人吧')
-            return False
-        elif 1 <= len(bv) < 5 and (num == 1 or num == 2):
-            self.logger.info('可投币视频数量%s，开始投币,不足5个投币给推荐视频' % len(bv))
-            a = random.randint(0, len(bv) - 1)
-            self.logger.info('可投币视频数量%s，开始投币' % len(bv))
-            for i in range(len(bv)):
-                self.logger.info('开始投币，标题%s' % title[i])
-                self.drop_coin(bv[i], num, csrf)
-                time.sleep(1)
-            url = self.url5 + "?bvid=" + bv[a]  # 动态视频下的推荐视频
-            recommend = self.get_requests(url)
-            re_title, re_bv = self.cope_recommend(recommend)
-            for j in range(5 - len(bv)):
-                self.logger.info('开始投币于推荐视频，标题%s' % re_title[j])
-                self.drop_coin(re_bv[j], num, csrf)
-                time.sleep(1)
-            return True
-        elif len(bv) >= 5 and (num == 1 or num == 2):
-            for i in range(len(bv)):
-                self.logger.info('开始投币，标题%s' % title[i])
-                self.drop_coin(bv[i], num, csrf)
-                if i == 4:
-                    self.logger.info('投币数量到达5个，结束投币')
-                    break
-                time.sleep(1)
+    def cope_video(self, bvid_list, video_title, coin, csrf):
+        choice_video = []
+        num = 0
+        for i in range(len(bvid_list)):
+            video = random.choice(bvid_list)
+            self.logger.info("视频：%s" % video_title[bvid_list.index(video)])
+            if self.c_v_d_i(video, coin, csrf) and video is not choice_video:
+                num += 1
+                break
+            else:
+                choice_video.append(video)
+        if num == 1:
             return True
         else:
-            self.logger.info('可投币视频数量%s，不投币' % len(bv))
             return False
+
+    @staticmethod
+    def list_uid(data):
+        mid_list = []
+        uname_list = []
+        for i in data:
+            mid_list.append(i['mid'])
+            uname_list.append(i['uname'])
+        return mid_list, uname_list
+
+    def search_uid(self, mid):
+        url = self.url11 % mid
+        video_num = self.get_requests(url)
+        if video_num['code'] == 0:
+            return video_num['data']['page']['count']
+        else:
+            return None
+
+    def cyc_search_uid(self, mid):
+        num = self.search_uid(mid)
+        if num > 50:
+            page = random.randint(1, int(num / 50) + 1)
+            bvid_list, video_title = self.bvid_page(mid, page)
+            return bvid_list, video_title
+        elif 0 < num <= 50:
+            bvid_list, video_title = self.bvid_page(mid, 1)
+            return bvid_list, video_title
+        else:
+            self.logger.info("不存在视频")
+            return None
+
+    def bvid_page(self, mid, page):
+        url = self.url11 % mid + "&ps=50&pn=%s" % page
+        bvid_data = self.get_requests(url)
+        if bvid_data['code'] == 0:
+            bvid_list, video_title = self.bvid_list(bvid_data['data']['list']['vlist'])
+            return bvid_list, video_title
+        else:
+            self.logger.error(bvid_data)
+
+    @staticmethod
+    def bvid_list(data):
+        bvid_list = []
+        video_title = []
+        for i in data:
+            bvid_list.append(i['bvid'])
+            video_title.append(i['title'])
+        return bvid_list, video_title
+
+    def c_v_d_i(self, bvid, coin, csrf):
+        url = "https://api.bilibili.com/x/web-interface/archive/coins?bvid=%s" % bvid
+        data = self.get_requests(url)
+        if data['code'] == 0:
+            if data['data']['multiply'] == 0:
+                self.drop_coin(bvid, coin, csrf)
+                return True
+            else:
+                self.logger.info("该视频已经投币过，不再投币")
+                return False
+        else:
+            self.logger.error('检查投币情况失败，错误码：%s' % data['code'])
+            return False
+
+    def recommend_video(self, bvid):
+        url = self.url5 + "?bvid=" + bvid
+        data = self.get_requests(url)
+        if data['code'] == 0:
+            return self.cope_recommend(data['data'])
+        else:
+            self.logger.error(data['message'])
+
+    @staticmethod
+    def cope_recommend(data):
+        title = []
+        bv = []
+        for i in data:
+            title.append(i['title'])
+            bv.append(i['bvid'])
+        return title, bv
 
     def drop_coin(self, bv, coin, csrf):
         data = {
@@ -64,36 +186,18 @@ class CopeMethod(Basic):
             'csrf': csrf
         }
         drop = self.post_requests(self.url3, data)
-        self.cope_drop_coin(drop)
-
-    def cope_drop_coin(self, data):  # 接收打赏返回数据，处理数据
-        if data['code'] == 0:
-            self.logger.info("投币成功 ௹ ✓")
-        elif data['code'] == -101:
-            self.logger.info(data['message'] + "请检查cookie")
-        elif data['code'] == -111:
-            self.logger.info(data['message'] + "请检查csrf")
-        elif data['code'] == -104:
-            self.logger.info(data['message'] + "硬币不足")
+        if drop['code'] == 0:
+            self.logger.info("投币成功")
         else:
-            self.logger.info(data['message'])
+            self.logger.error(drop['message'])
 
-    def cope_recommend(self, data):
-        title = []
-        bv = []
-        if data['code'] == 0:
-            for i in range(len(data['data'])):
-                title.append(data['data'][i]['title'])
-                bv.append(data['data'][i]['bvid'])
-                if i == 4:
-                    break
-            return title, bv
-        elif data['code'] == -101:
-            self.logger.info(data['message'] + "请检查cookie")
-        elif data['code'] == -111:
-            self.logger.info(data['message'] + "请检查csrf")
+    def sign_live(self):
+        self.logger.info('开始直播签到')
+        sign = self.get_requests(self.url8)
+        if sign['code'] == 0:
+            self.logger.info('直播签到成功')
         else:
-            self.logger.info(data['message'])
+            self.logger.info(sign['message'])
 
     def share_dynamic(self, title, bv, csrf):
         data = {
@@ -102,17 +206,10 @@ class CopeMethod(Basic):
         }
         self.logger.info('开始分享动态，标题%s' % title)
         share = self.post_requests(self.url4, data)
-        self.cope_share_dynamic(share)
-
-    def cope_share_dynamic(self, data):
-        if data['code'] == 0:
-            self.logger.info("分享成功 ௹ ✓")
-        elif data['code'] == -101:
-            self.logger.info(data['message'] + "请检查cookie")
-        elif data['code'] == -111:
-            self.logger.info(data['message'] + "请检查csrf")
+        if share['code'] == 0:
+            self.logger.info('分享动态成功')
         else:
-            self.logger.info(data['message'])
+            self.logger.info(share['message'])
 
     def play_video(self, bv, title):
         data = {
@@ -122,52 +219,34 @@ class CopeMethod(Basic):
         }
         self.logger.info('开始播放视频，标题%s' % title)
         play = self.post_requests(self.url6, data)
-        self.cope_play_video(play)
-
-    def cope_play_video(self, data):
-        if data['code'] == 0:
-            self.logger.info("播放成功 ௹ ✓")
+        if play['code'] == 0:
+            self.logger.info('播放视频成功')
         else:
-            self.logger.info(data['message'])
-
-    def DoSign(self):
-        self.logger.info('开始直播签到')
-        sign = self.get_requests(self.url8)
-        self.cope_sign(sign)
-
-    def cope_sign(self, data):
-        if data['code'] == 0:
-            self.logger.info("签到成功 ௹ ✓")
-        else:
-            self.logger.info(data['message'])
-
-    def decorate(self):
-        self.logger.info("该脚本由GitHub@王权富贵233制作")
-        self.logger.info("脚本依赖于requests，和Bilibili.User.py")
-        self.logger.info("每天自动任务65经验,可以自行设置投币数量,推荐cron 1 1 * * *")
-        self.logger.info("✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️✌️")
+            self.logger.info(play['message'])
 
     def run(self):
-        self.decorate()
-        for i in range(len(self.cookies)):
-            self.headers['Cookie'] = self.cookies[i]
-            info = self.get_requests(self.url)
-            self.cope_info(info)
-            self.DoSign()
-            dynamic = self.get_requests(self.url2)
-            title, bv = self.cope_dynamic(dynamic)
-            self.check_bv_num(bv, title, self.coin[i], self.csrfs[i])
-            if len(bv) > 0:
-                s_bv = random.randint(0, len(bv)-1)
-                self.share_dynamic(title[s_bv], bv[s_bv], self.csrfs[i])
-                self.play_video(bv[s_bv], title[s_bv])
+        self.logger.info('= '*5+'Bilibili任务助手'+' ='*5)
+        self.logger.info('·'*5+'github@wangquanfugui233'+'·'*5)
+        self.logger.info('支持对特定up主投币，到Bilibili_config.json添加up主的mid')
+        self.logger.info('格式："favorite": [mid,mid,mid...]')
+        self.logger.info('不添加则从默认分组投币')
+        cookies = self.fetch_cookies()
+        coins = self.fetch_drop_coin()
+        csrfs = self.fetch_csrf(cookies)
+        for i in cookies:
+            self.headers['Cookie'] = i
+            self.headers['user-agent'] = random.choice(self.ua_list)
+            user_info = self.get_requests(self.url)
+            self.cope_info(user_info)
+            self.sign_live()
+            if self.other_task(csrfs[cookies.index(i)]):
+                pass
             else:
-                self.logger.info('没有可分享的动态')
-                self.logger.info('也没有可播放的视频')
-            self.logger.info('第%s个帐号结束' % (i + 1))
-        self.logger.info('😎😎😎😎😎😎😎😎😎😎😎全部结束😎😎😎😎😎😎😎😎😎😎😎')
+                self.other_task(csrfs[cookies.index(i)])
+            self.uid_info(coins[cookies.index(i)], csrfs[cookies.index(i)])
+        self.logger.info("= "*5+"任务完成"+"= ")
 
 
 if __name__ == '__main__':
-    cope = CopeMethod()
-    cope.run()
+    Daily = Daily()
+    Daily.run()
