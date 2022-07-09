@@ -58,15 +58,15 @@ class Refactor_Bilibili_CTime(Basic):
             self.logger.info('【%s】扫描---》：⟪ %s ⟫' % (now, i['name']))
             area_id, area_name = self.cope_min_area(i['list'])
             self.cycle_min_area(i['id'], area_name, area_id, gid, csrf)
-            if all_area['data'][-1] == i:
-                self.logger.info('-------->到达最后一个分区，结束<---------')
-                break
-            end_time = time.time()
-            if int(end_time - start_time) <= 60:
-                self.logger.info('-------->扫描时长少于一分钟进入下一分区<---------')
-            else:
-                self.logger.info('-->【' + i['name'] + '】：扫描完毕---随机休息1-2分钟')
-                time.sleep(random.randint(60 * 1, 60 * 2))
+#             if all_area['data'][-1] == i:
+#                 self.logger.info('-------->到达最后一个分区，结束<---------')
+#                 break
+#             end_time = time.time()
+#             if int(end_time - start_time) <= 60:
+#                 self.logger.info('-------->扫描时长少于一分钟进入下一分区<---------')
+#             else:
+#                 self.logger.info('-->【' + i['name'] + '】：扫描完毕---随机休息1-2分钟')
+#                 time.sleep(random.randint(60 * 1, 60 * 2))
 
     @staticmethod
     def cope_min_area(data1):
