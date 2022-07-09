@@ -222,7 +222,7 @@ class Config:
                 self.update_config()
             else:
                 self.logger.info("配置文件有误,尝试修正")
-                self.insert_data(len(cookies))
+                self.insert_data(len(cookies)-len(coins))
                 self.update_config()
         else:
             self.logger.info("检查一下cookie吧")
@@ -230,7 +230,7 @@ class Config:
     def basic_info(self):
         self.logger.info("脚本作者：github@wangquanfugui233")
         self.logger.info("Bilibili_config.json文件路径为：" + str(os.getcwd()) + "/Bilibili_config.json")
-        self.logger.info("cookie不能有大括号！！！！！！")
+        self.logger.info("小tips ：cookie不能有大括号！！！！！！")
         if self.check_json():
             self.logger.info("开始检查配置文件")
             self.check_config()
