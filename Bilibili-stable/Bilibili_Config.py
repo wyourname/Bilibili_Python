@@ -112,7 +112,7 @@ class Config:
                 self.update_json(data)
 
     def insert_data(self, num):
-        for i in range(num - 1):
+        for i in range(num):
             with open("./Bilibili_config.json", 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 data['Drop_coin'].append({'coin': 1})
