@@ -36,13 +36,14 @@ class Daily(Basic):
                 mid = random.choice(self.specify)
                 self.logger.info("你选择了指定用户投币，uid：%s" % mid)
                 bvid_list, video_title = self.cyc_search_uid(mid)
-                if bvid_list is not None:
+                if bvid_list:
                     if self.cope_video(bvid_list, video_title, coin, csrf):
                         num += 1
                     else:
                         pass
                 else:
-                    self.logger.info("没有视频")
+                    if len(self.specify) == 1:
+                        break
                 if num == 5:
                     break
             if num < 5:
@@ -58,7 +59,7 @@ class Daily(Basic):
         mid = random.choice(mid_list)
         self.logger.info("随机选择了用户：" + uname_list[mid_list.index(mid)])
         bvid_list, video_title = self.cyc_search_uid(mid)
-        if bvid_list is not None:
+        if bvid_list:
             video = random.choice(bvid_list)
             self.play_video(video, video_title[bvid_list.index(video)])
             self.share_dynamic(video_title[bvid_list.index(video)], video, csrf)
@@ -74,13 +75,13 @@ class Daily(Basic):
             mid = random.choice(mid_list)
             self.logger.info("本次投币对象："+uname_list[mid_list.index(mid)])
             bvid_list, video_title = self.cyc_search_uid(mid)
-            if bvid_list is not None:
+            if bvid_list:
                 if self.cope_video(bvid_list, video_title, coin, csrf):
                     num += 1
                 else:
                     pass
             else:
-                self.logger.info("没有视频")
+                pass
             if num == 5:
                 break
 
@@ -127,8 +128,7 @@ class Daily(Basic):
             bvid_list, video_title = self.bvid_page(mid, 1)
             return bvid_list, video_title
         else:
-            self.logger.info("不存在视频")
-            return None
+            return None, None
 
     def bvid_page(self, mid, page):
         url = self.url11 % mid + "&ps=50&pn=%s" % page
@@ -236,6 +236,7 @@ class Daily(Basic):
         for i in cookies:
             self.headers['Cookie'] = i
             self.headers['user-agent'] = random.choice(self.ua_list)
+            self.headers['Referer'] = 'https://www.bilibili.com/'
             user_info = self.get_requests(self.url)
             self.cope_info(user_info)
             self.sign_live()
@@ -245,6 +246,7 @@ class Daily(Basic):
                 self.other_task(csrfs[cookies.index(i)])
             self.uid_info(coins[cookies.index(i)], csrfs[cookies.index(i)])
         self.logger.info("= "*5+"任务完成"+"= ")
+        #     self.drop_coin("BV1AN4y1T7rA", 2, csrfs[cookies.index(i)])
 
 
 if __name__ == '__main__':
