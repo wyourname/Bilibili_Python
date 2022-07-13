@@ -245,7 +245,7 @@ class Daily(Basic):
             else:
                 self.other_task(csrfs[cookies.index(i)])
             self.uid_info(coins[cookies.index(i)], csrfs[cookies.index(i)])
-        self.logger.info("= "*5+"任务完成"+"= ")
+        self.logger.info("= "*5+"任务完成"+"= "*5)
         #     self.drop_coin("BV1AN4y1T7rA", 2, csrfs[cookies.index(i)])
 
 
