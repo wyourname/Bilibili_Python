@@ -19,8 +19,8 @@ class Basic(Config):
                 get_data = json.loads(response.text)
                 return get_data
             else:
-                self.logger.error(json.loads(response.text)['message'])
-                return None
+                get_error = json.loads(response.text)
+                self.logger.error(get_error['code'])
         except Exception as e:
             self.logger.error('请求失败，错误信息：{}'.format(e))
 
@@ -35,7 +35,7 @@ class Basic(Config):
                 return post_data
             else:
                 self.logger.error(json.loads(response.text)['message'])
-                return None
+                return json.loads(response.text)
         except Exception as e:
             self.logger.error('请求失败，错误信息：{}'.format(e))
 
@@ -60,7 +60,6 @@ class Basic(Config):
         self.logger.info("该脚本为验证你的cookie是否有效，如果cookie无效，请检查cookie是否过期")
         self.logger.info("脚本包含了日常任务函数，如果你不需要日常任务，请删除该脚本和Bilibili_Daily.py文件")
         for i in range(len(self.cookies)):
-            self.logger.info("**********用户信息**********")
             self.headers['Cookie'] = self.cookies[i]
             user = self.get_requests(self.url)
             self.cope_info(user)

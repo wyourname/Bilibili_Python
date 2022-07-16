@@ -39,6 +39,7 @@ class Config:
         self.url6 = "https://api.bilibili.com/x/click-interface/web/heartbeat"
         self.url7 = "https://api.live.bilibili.com/room/v1/Area/getList"
         self.url8 = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
+        self.url_re = "https://api.bilibili.com/x/relation?fid=%s"
         self.url9 = "https://api.bilibili.com/x/relation/tags"
         self.url10 = "https://api.bilibili.com/x/relation/tag"
         self.url11 = "https://api.bilibili.com/x/space/arc/search?mid=%s"
@@ -112,7 +113,7 @@ class Config:
                 self.update_json(data)
 
     def insert_data(self, num):
-        for i in range(num):
+        for i in range(num - 1):
             with open("./Bilibili_config.json", 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 data['Drop_coin'].append({'coin': 1})
@@ -191,7 +192,7 @@ class Config:
                 black_list = json.load(f)
                 return black_list['black_list']
         except Exception as e:
-            self.logger.info(e)
+            self.logger.error(e)
             return 0
 
     def fetch_white_list(self):
@@ -200,7 +201,7 @@ class Config:
                 white_list = json.load(f)
                 return white_list['white_list']
         except Exception as e:
-            self.logger.info(e)
+            self.logger.error(e)
             return 0
 
     def fetch_favorite(self):
@@ -209,7 +210,7 @@ class Config:
                 white_list = json.load(f)
                 return white_list['favorite']
         except Exception as e:
-            self.logger.info(e)
+            self.logger.error(e)
             return None
 
     def check_config(self):
