@@ -1,3 +1,7 @@
+"""
+cron: 12 8-12 * * *
+new Env('天选时刻')
+"""
 import logging
 import random
 import re
