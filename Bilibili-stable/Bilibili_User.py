@@ -20,7 +20,7 @@ class Basic(Config):
                 return get_data
             else:
                 get_error = json.loads(response.text)
-                self.logger.error(get_error['code'])
+                return get_error
         except Exception as e:
             self.logger.error('请求失败，错误信息：{}'.format(e))
 
@@ -34,8 +34,8 @@ class Basic(Config):
                 post_data = json.loads(response.text)
                 return post_data
             else:
-                self.logger.error(json.loads(response.text)['message'])
-                return json.loads(response.text)
+                post_error = json.loads(response.text)
+                return post_error
         except Exception as e:
             self.logger.error('请求失败，错误信息：{}'.format(e))
 
