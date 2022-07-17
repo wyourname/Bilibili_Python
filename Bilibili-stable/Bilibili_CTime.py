@@ -63,8 +63,8 @@ class Bilibili_CTime(Basic):
             self.cycle_live(i['id'], min_id, tag_id, csrf)
 
     def cycle_live(self, parent_id, min_live_id, tag_id, csrf):
-        task_list = []
         with ThreadPoolExecutor(max_workers=self.max_thread) as executor:
+            task_list = []
             for i in min_live_id:
                 task_list.append(executor.submit(self.cycle_page, parent_id, i, tag_id, csrf))
             wait(task_list, return_when=ALL_COMPLETED)
