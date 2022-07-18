@@ -80,11 +80,11 @@ class Bilibili_CTime(Basic):
                 task_list.append(executor.submit(self.cycle_page, parent_id, i, tag_id, csrf))
 
     def cycle_page(self, parent_id, child_id, tag_id, csrf):
-        # try:
-        #     os.kill(self.pid, 0)
-        # except Exception:
-        #     self.logger.info('The main process does not exist and will wait for the remaining processes to complete the task and kill')
-        #     os.kill(os.getpid(), signal.SIGKILL)
+        try:
+            os.kill(self.pid, 0)
+        except Exception:
+            self.logger.info('The main process does not exist and will wait for the remaining processes to complete the task and kill')
+            os.kill(os.getpid(), signal.SIGKILL)
         for i in range(1, self.max_page + 1):
             live_page = self.url_all % (parent_id, child_id, i)
             page_info = self.get_requests(live_page)
