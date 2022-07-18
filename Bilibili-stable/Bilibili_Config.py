@@ -169,7 +169,10 @@ class Config:
         try:
             with open('./Bilibili_config.json', 'r', encoding='utf-8') as f:
                 thread = json.load(f)
-                return thread['max_thread']
+                if thread['max_thread'] <= 12:
+                    return thread['max_thread']
+                else:
+                    return 12
         except Exception as e:
             self.logger.info(e)
             return 0
@@ -223,7 +226,7 @@ class Config:
                 self.update_config()
             else:
                 self.logger.info("配置文件有误,尝试修正")
-                self.insert_data(len(cookies)-len(coins))
+                self.insert_data(len(cookies) - len(coins))
                 self.update_config()
         else:
             self.logger.info("检查一下cookie吧")

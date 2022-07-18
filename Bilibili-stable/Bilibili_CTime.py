@@ -1,12 +1,10 @@
-"""
-cron: 12 8-12 * * *
-new Env('天选时刻')
-"""
 import logging
+import os
 import random
+import signal
 import re
 import sys
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait, ALL_COMPLETED
+from concurrent.futures import ThreadPoolExecutor
 from Bilibili_User import *
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -23,15 +21,21 @@ class Bilibili_CTime(Basic):
         self.black_list = self.fetch_black_list()
 
     def check_group(self, csrf):
-        group = self.get_requests(self.url9)
-        tag_id = self.cope_group(group)
-        if tag_id is not None:
-            self.logger.info(f'{"**" * 5}存在天选时刻分组{"**" * 5}')
-            self.Scan_all_live(tag_id, csrf)
-        else:
-            self.logger.info('不存在分组,开始创建')
-            tag_id = self.create_group(csrf)
-            self.Scan_all_live(tag_id, csrf)
+        try:
+            group = self.get_requests(self.url9)
+            tag_id = self.cope_group(group)
+            if tag_id is not None:
+                self.logger.info(f'{"**" * 5}存在天选时刻分组{"**" * 5}')
+                time.sleep(15)
+                self.Scan_all_live(tag_id, csrf)
+            else:
+                self.logger.info('不存在分组,开始创建')
+                tag_id = self.create_group(csrf)
+                self.Scan_all_live(tag_id, csrf)
+        except Exception as e:
+            self.logger.info(e)
+            os.kill(os.getpid(), signal.SIGKILL)
+            # os._exit(0)
 
     @staticmethod
     def cope_group(group):
@@ -57,6 +61,7 @@ class Bilibili_CTime(Basic):
             self.cope_all_live(all_live, tag_id, csrf)
         else:
             self.logger.info('扫描全部分区失败')
+            os.kill(os.getpid(), signal.SIGKILL)
             sys.exit(0)
 
     def cope_all_live(self, all_live, tag_id, csrf):
@@ -67,11 +72,17 @@ class Bilibili_CTime(Basic):
             self.cycle_live(i['id'], min_id, tag_id, csrf)
 
     def cycle_live(self, parent_id, min_live_id, tag_id, csrf):
+        # self.logger.info(os.getpid())
         with ThreadPoolExecutor(max_workers=self.max_thread) as executor:
             task_list = []
             for i in min_live_id:
-                task_list.append(executor.submit(self.cycle_page, parent_id, i, tag_id, csrf))
-            wait(task_list, return_when=ALL_COMPLETED)
+                try:
+                    task_list.append(executor.submit(self.cycle_page, parent_id, i, tag_id, csrf))
+                except Exception as e:
+                    self.logger.info(e)
+                    # os.kill(os.getpid(), signal.SIGKILL)
+                    # os._exit(0)
+            # wait(task_list, return_when=ALL_COMPLETED)
 
     def cycle_page(self, parent_id, child_id, tag_id, csrf):
         for i in range(1, self.max_page + 1):
@@ -84,7 +95,8 @@ class Bilibili_CTime(Basic):
                     break
             if page_info['code'] == -412:
                 self.logger.info("检测到被拦截,结束程序，一小时后再试")
-                sys.exit(0)
+                os.kill(os.getpid(), signal.SIGKILL)
+                # os._exit(0)
 
     def scan_live_page(self, page_info, tag_id, csrf):
         for i in page_info['data']['list']:
