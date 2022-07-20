@@ -250,6 +250,10 @@ class Daily(Basic):
             self.mao_san(csrfs[cookies.index(i)])
             self.clockin()
             self.sign_live()
+            if self.other_task(csrfs[cookies.index(i)]):
+                pass
+            else:
+                self.other_task(csrfs[cookies.index(i)])
             self.uid_info(coins[cookies.index(i)], csrfs[cookies.index(i)])
         self.logger.info("= "*8+"任务完成"+"= "*8)
 
