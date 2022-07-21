@@ -35,7 +35,7 @@
 
 最近发现daily确实难用各位有什么推荐的建议可以说说，可以改改
 
-6.25 dev新版本，有黑白名单功能 拉库 ql repo https://hub.fastgit.xyz/wangquanfugui233/Bilibili_Python.git "^Dev_Bilibili_" "^Bilibili_"
+6.25 dev新版本，有黑白名单功能 拉库 ql repo https://hub.fastgit.xyz/wangquanfugui233/Bilibili_Python.git "Dev_Bilibili_"
 
 其他再改了再改了
 
