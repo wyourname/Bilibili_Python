@@ -11,7 +11,7 @@ import re
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait, ALL_COMPLETED
-from Bilibili_User import *
+from Dev_Bilibili_User import *
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
