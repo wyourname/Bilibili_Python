@@ -1,4 +1,8 @@
-from Bilibili_Daily import *
+"""
+new Env("哔哩哔哩-取关")
+cron : 2 1 */15 * *
+"""
+from Bilibili_User import Basic
 
 
 class Unfollows(Basic):
@@ -81,6 +85,7 @@ class Unfollows(Basic):
         self.logger.info("*" * 6 + "开始取关" + "*" * 6)
         for i in range(len(self.cookies)):
             self.headers['cookie'] = self.cookies[i]
+            self.headers['referer'] = "https://www.bilibili.com/"
             self.check_group(self.csrfs[i])
         self.logger.info("=============》结束《============")
 

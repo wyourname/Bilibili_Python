@@ -1,3 +1,8 @@
+"""
+new Env("哔哩哔哩-天选中奖通知")
+cron 1 23 * * *
+
+"""
 from Bilibili_User import *
 from notify import send
 import datetime
@@ -22,7 +27,8 @@ class prize(Basic):
             if date_time.strftime('%Y-%m-%d ') == dt:
                 self.logger.info('恭喜你中奖，奖品是：%s --- 兑奖up主是：%s' % (i['award_name'], i['anchor_name']))
                 self.logger.info('中将时间是：%s' % i['end_time'])
-                self.msg += '中将时间：【%s】 今天的天选中奖，奖品是：%s --- 兑奖up主是：%s' % (i['end_time'], i['award_name'], i['anchor_name'])
+                self.msg += '\n 中将时间：【%s】 今天的天选中奖，奖品是：%s --- 兑奖up主是：%s' % (
+                    i['end_time'], i['award_name'], i['anchor_name'])
                 self.logger.info("检查白名单")
                 self.check_white_list(i['anchor_uid'])
             else:
@@ -37,7 +43,7 @@ class prize(Basic):
                     if i == uid:
                         self.logger.info('已存在于白名单')
                         num += 1
-                        break   # 如果存在于白名单，则跳出循环
+                        break  # 如果存在于白名单，则跳出循环
             else:
                 self.logger.info('白名单为空')
                 self.update_white_list(data, uid)
@@ -52,17 +58,14 @@ class prize(Basic):
         print('加入白名单成功')
 
     def ql_send(self):
-        if self.msg != '详细信息:\n':
-            send('Bilibili天选时刻通知', self.msg)
-        else:
-            self.logger.info('今天没有中奖')
-            send('Bilibili天选时刻通知', '今天没有中奖')
+        send("Bilibili天选通知", self.msg)
 
     def run(self):
         cookies = self.fetch_cookies()
         for i in cookies:
             self.headers['Cookie'] = i
             user = self.get_requests(self.url)
+            self.msg += " %s：" % user['data']['uname']
             self.cope_info(user)
             self.get_prize()
         try:

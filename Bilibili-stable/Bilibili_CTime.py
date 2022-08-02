@@ -1,9 +1,14 @@
+"""
+cron: 1 8-12 * * *
+new Env('哔哩哔哩-【天选时刻】')
+"""
 import logging
 import os
 import random
 import signal
 import re
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from Bilibili_User import *
 
@@ -72,17 +77,10 @@ class Bilibili_CTime(Basic):
             self.cycle_live(i['id'], min_id, tag_id, csrf)
 
     def cycle_live(self, parent_id, min_live_id, tag_id, csrf):
-        # self.logger.info(os.getpid())
         with ThreadPoolExecutor(max_workers=self.max_thread) as executor:
             task_list = []
             for i in min_live_id:
-                try:
-                    task_list.append(executor.submit(self.cycle_page, parent_id, i, tag_id, csrf))
-                except Exception as e:
-                    self.logger.info(e)
-                    # os.kill(os.getpid(), signal.SIGKILL)
-                    # os._exit(0)
-            # wait(task_list, return_when=ALL_COMPLETED)
+                task_list.append(executor.submit(self.cycle_page, parent_id, i, tag_id, csrf))
 
     def cycle_page(self, parent_id, child_id, tag_id, csrf):
         for i in range(1, self.max_page + 1):
@@ -124,8 +122,7 @@ class Bilibili_CTime(Basic):
                 pass
             else:
                 if tx_info['data']['gift_id'] == 0:
-                    self.logger.info(
-                        f"【{uname}】--【{tx_info['data']['award_name']}】--【{tx_info['data']['require_text']}】")
+                    self.logger.info(f"【{uname}】--【{tx_info['data']['award_name']}】--【{tx_info['data']['require_text']}】")
                     self.tx_join(tx_info['data']['ruid'], tx_info['data']['id'], uname, room_id, tag_id, csrf)
                 else:
                     pass
@@ -146,6 +143,7 @@ class Bilibili_CTime(Basic):
             join_info = self.post_requests(self.url_tx, data)
             if join_info['code'] == 0:
                 self.logger.info(f'【成功参加"{uname}"的天选】')
+                self.send_danmu(room_id, csrf)
                 self.relationship_check(uid, uname, tag_id, csrf)
             else:
                 self.logger.info(join_info['message'])
@@ -180,6 +178,18 @@ class Bilibili_CTime(Basic):
         else:
             self.logger.info(Move_info['message'])
 
+    def send_danmu(self, room_id, csrf):
+        emotion_list = ['official_147', 'official_109', 'official_113', 'official_120', 'official_150', 'official_103', 'official_128', 'official_133', 'official_149', 'official_124', 'official_146', 'official_148', 'official_102', 'official_121', 'official_137', 'official_118', 'official_129', 'official_108', 'official_104', 'official_105', 'official_106', 'official_114', 'official_107', 'official_110', 'official_111', 'official_136', 'official_115', 'official_116', 'official_117', 'official_119', 'official_122', 'official_123', 'official_125', 'official_126', 'official_127', 'official_134', 'official_135', 'official_138']
+        rnd = int(time.time())
+        emotion = random.choice(emotion_list)
+        data = {'bubble': 0, 'msg': emotion, 'color': 16777215, 'fontsize': 25, 'mode': 1, 'rnd': rnd, 'dm_type': 1,
+                'roomid': room_id, 'csrf': csrf}
+        danmu_info = self.post_requests(self.send, data)
+        if danmu_info['code'] == 0:
+            self.logger.info(f'------->发送弹幕成功')
+        else:
+            self.logger.info(danmu_info['message'])
+
     def decorate(self):
         self.logger.info("脚本由GitHub@王权富贵233提供")
         self.logger.info("该脚本仅供学习交流，仅供学习参考，仅供学习参考")
@@ -193,8 +203,9 @@ class Bilibili_CTime(Basic):
             self.headers['user-agent'] = random.choice(self.ua_list)
             self.headers['referer'] = "https://live.bilibili.com/"
             self.cope_info(self.get_requests(self.url))
+            # self.send_danmu(923833, self.csrfs[i])
             self.check_group(self.csrfs[i])
-            self.logger.info(f"{'*'*5}第{i+1}帐号结束{'*'*5}")
+            self.logger.info(f"{'*' * 5}第{i + 1}帐号结束{'*' * 5}")
 
 
 if __name__ == '__main__':

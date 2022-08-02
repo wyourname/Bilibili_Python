@@ -1,14 +1,13 @@
+"""
+cron: 1 1 1 1 *
+new Env('哔哩哔哩-【配置】')
+定时随意，每次更新运行两下
+"""
+
+
 import json
 import logging
 import os
-
-
-# 这里是把模块里面的一些变量提取出来，方便后面的使用
-# 可以把这些变量提取出来，放到一个文件里面，这样就不会污染模块里面的变量
-# 这里负责读取数据处理数据把数据包装传递到method里面
-# sessdata  bili_jct  DedeUserID  DedeUserID_ckmd5  sid Build
-#
-#
 
 
 class Config:
@@ -51,6 +50,8 @@ class Config:
         self.url_group = "https://api.bilibili.com/x/relation/tags"
         self.create_url = "https://api.bilibili.com/x/relation/tag/create"
         self.prize = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/AwardRecord"
+        self.send = "https://api.live.bilibili.com/msg/send"
+        self.clockin_url = "https://manga.bilibili.com/twirp/activity.v1.Activity/ClockIn"
         self.ua_list = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47 ",
@@ -106,14 +107,20 @@ class Config:
                 del data['Unfollows']
                 self.update_json(data)
             if "favorite" in data:
-                self.logger.info("给指定up主名单配置存在")
+                self.logger.info("给指定up主投币名单配置存在")
             else:
-                self.logger.info("给指定up主名单配置不存在，创建")
+                self.logger.info("给指定up主投币名单配置不存在，创建")
                 data.update({"favorite": []})
+                self.update_json(data)
+            if "follow_author" in data:
+                self.logger.info("关注作者开关存在")
+            else:
+                self.logger.info("关注作者开关不存在，默认开启")
+                data.update({"follow_author": True})
                 self.update_json(data)
 
     def insert_data(self, num):
-        for i in range(num - 1):
+        for i in range(num):
             with open("./Bilibili_config.json", 'r', encoding='utf-8') as f:
                 data = json.load(f)
                 data['Drop_coin'].append({'coin': 1})
@@ -216,32 +223,42 @@ class Config:
             self.logger.error(e)
             return None
 
+    def fetch_follow(self):
+        try:
+            with open('./Bilibili_config.json', 'r', encoding='utf-8') as f:
+                follow = json.load(f)
+                return follow['follow_author']
+        except Exception as e:
+            self.logger.error(e)
+            return False
+
     def check_config(self):
         cookies = self.fetch_cookies()
         csrfs = self.fetch_csrf(cookies)
         coins = self.fetch_drop_coin()
         if cookies:
             if len(cookies) == len(coins) == len(csrfs):
-                self.logger.info("配置文件正确")
+                self.logger.info("基础配置文件正确")
                 self.update_config()
             else:
-                self.logger.info("配置文件有误,尝试修正")
-                self.insert_data(len(cookies) - len(coins))
-                self.update_config()
+                if len(cookies) > len(coins):
+                    self.insert_data(len(cookies) - len(coins))
+                else:
+                    self.logger.info("投币配置貌似多于帐号数量，不影响程序运行")
         else:
             self.logger.info("检查一下cookie吧")
 
     def basic_info(self):
-        self.logger.info("脚本作者：github@wangquanfugui233")
-        self.logger.info("Bilibili_config.json文件路径为：" + str(os.getcwd()) + "/Bilibili_config.json")
-        self.logger.info("小tips ：cookie不能有大括号！！！！！！")
+        self.logger.info("json文件路径为：" + str(os.getcwd()) + "\Bilibili_config.json")
+        self.logger.info("【这是提醒不是错误】：cookie不能有大括号！！！！！！")
+        self.logger.info("配置文件说明BV号：BV1SB4y1e7Vr")
+        self.logger.info('author: github@wangquanfugui233')
         if self.check_json():
             self.logger.info("开始检查配置文件")
             self.check_config()
         else:
             self.logger.info("开始创建配置文件")
             self.create_file()
-        self.logger.info("每次填完配置文件后，请跑一次本脚本检查是否正确")
 
 
 if __name__ == '__main__':

@@ -1,5 +1,7 @@
-import random
-
+"""
+new Env("哔哩哔哩-【日常】")
+cron : 5 1 * * *
+"""
 from Bilibili_User import *
 
 
@@ -187,7 +189,7 @@ class Daily(Basic):
         }
         drop = self.post_requests(self.url3, data)
         if drop['code'] == 0:
-            self.logger.info("投币成功")
+            self.logger.info("【投币成功】")
         else:
             self.logger.error(drop['message'])
 
@@ -195,7 +197,7 @@ class Daily(Basic):
         self.logger.info('开始直播签到')
         sign = self.get_requests(self.url8)
         if sign['code'] == 0:
-            self.logger.info('直播签到成功')
+            self.logger.info('【直播签到成功】')
         else:
             self.logger.info(sign['message'])
 
@@ -207,7 +209,7 @@ class Daily(Basic):
         self.logger.info('开始分享动态，标题%s' % title)
         share = self.post_requests(self.url4, data)
         if share['code'] == 0:
-            self.logger.info('分享动态成功')
+            self.logger.info('【分享动态成功】')
         else:
             self.logger.info(share['message'])
 
@@ -220,16 +222,22 @@ class Daily(Basic):
         self.logger.info('开始播放视频，标题%s' % title)
         play = self.post_requests(self.url6, data)
         if play['code'] == 0:
-            self.logger.info('播放视频成功')
+            self.logger.info('【播放视频成功】')
         else:
             self.logger.info(play['message'])
 
+    def clockin(self):
+        data = {'platform': 'android'}
+        clock_info = self.post_requests(self.clockin_url, data)
+        if clock_info['code'] == 0:
+            self.logger.info("漫画签到成功")
+        else:
+            self.logger.info(clock_info['msg'])
+
     def run(self):
-        self.logger.info('= '*5+'Bilibili任务助手'+' ='*5)
-        self.logger.info('·'*5+'github@wangquanfugui233'+'·'*5)
-        self.logger.info('支持对特定up主投币，到Bilibili_config.json添加up主的mid')
-        self.logger.info('格式："favorite": [mid,mid,mid...]')
-        self.logger.info('不添加则从默认分组投币')
+        self.manual()
+        self.logger.info('目的是随机给我回点硬币，是随机')
+        self.logger.info('日常加入漫画签到')
         cookies = self.fetch_cookies()
         coins = self.fetch_drop_coin()
         csrfs = self.fetch_csrf(cookies)
@@ -239,14 +247,15 @@ class Daily(Basic):
             self.headers['Referer'] = 'https://www.bilibili.com/'
             user_info = self.get_requests(self.url)
             self.cope_info(user_info)
+            self.mao_san(csrfs[cookies.index(i)])
+            self.clockin()
             self.sign_live()
             if self.other_task(csrfs[cookies.index(i)]):
                 pass
             else:
                 self.other_task(csrfs[cookies.index(i)])
             self.uid_info(coins[cookies.index(i)], csrfs[cookies.index(i)])
-        self.logger.info("= "*5+"任务完成"+"= "*5)
-        #     self.drop_coin("BV1AN4y1T7rA", 2, csrfs[cookies.index(i)])
+        self.logger.info("= "*8+"任务完成"+"= "*8)
 
 
 if __name__ == '__main__':
