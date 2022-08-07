@@ -1,6 +1,6 @@
 """
-new Env("哔哩哔哩-取关")
 cron : 2 1 */15 * *
+new Env("哔哩哔哩-取关")
 """
 from Bilibili_User import Basic
 
