@@ -1,6 +1,6 @@
 """
-new Env("哔哩哔哩-天选中奖通知")
 cron 1 23 * * *
+new Env("哔哩哔哩-天选中奖通知")
 
 """
 from Bilibili_User import *
