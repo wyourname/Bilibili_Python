@@ -202,8 +202,11 @@ class Bilibili_CTime(Basic):
             self.headers['Cookie'] = self.cookies[i]
             self.headers['user-agent'] = random.choice(self.ua_list)
             self.headers['referer'] = "https://live.bilibili.com/"
-            self.cope_info(self.get_requests(self.url))
-            # self.send_danmu(923833, self.csrfs[i])
+            if self.cope_info(self.get_requests(self.url)):
+                self.logger.info("检查帐号有效性成功")
+            else:
+                self.logger.info("帐号cookie过期，跳过该账号")
+                continue
             self.check_group(self.csrfs[i])
             self.logger.info(f"{'*' * 5}第{i + 1}帐号结束{'*' * 5}")
 

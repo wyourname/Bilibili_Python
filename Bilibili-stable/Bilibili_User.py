@@ -81,8 +81,10 @@ class Basic(Config):
             else:
                 level_day = (data['data']['level_info']['next_exp'] - data['data']['level_info']['current_exp']) / 65
                 self.logger.info('当前硬币数：' + str(data['data']['money']) + "，下一等级升级天数约" + str(int(level_day)))
+            return True
         elif data['code'] == -101:
             self.logger.info(data['message'] + "请检查cookie")
+            return False
         elif data['code'] == -111:
             self.logger.info(data['message'] + "请检查csrf")
         else:

@@ -237,7 +237,7 @@ class Daily(Basic):
     def run(self):
         self.manual()
         self.logger.info('目的是随机给我回点硬币，是随机')
-        self.logger.info('日常加入漫画签到')
+        self.logger.info('本次更新支持不投币，coin设置为0即可')
         cookies = self.fetch_cookies()
         coins = self.fetch_drop_coin()
         csrfs = self.fetch_csrf(cookies)
@@ -246,7 +246,11 @@ class Daily(Basic):
             self.headers['user-agent'] = random.choice(self.ua_list)
             self.headers['Referer'] = 'https://www.bilibili.com/'
             user_info = self.get_requests(self.url)
-            self.cope_info(user_info)
+            if self.cope_info(user_info):
+                self.logger.info('--》帐号有效《--')
+            else:
+                self.logger.info('--》帐号无效,跳出该帐号《--')
+                continue
             self.mao_san(csrfs[cookies.index(i)])
             self.clockin()
             self.sign_live()
@@ -254,7 +258,11 @@ class Daily(Basic):
                 pass
             else:
                 self.other_task(csrfs[cookies.index(i)])
-            self.uid_info(coins[cookies.index(i)], csrfs[cookies.index(i)])
+            if coins[cookies.index(i)] == 0:
+                self.logger.info('设置了不投币，跳过投币任务')
+                continue
+            else:
+                self.uid_info(coins[cookies.index(i)], csrfs[cookies.index(i)])
         self.logger.info("= "*8+"任务完成"+"= "*8)
 
 
