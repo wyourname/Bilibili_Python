@@ -1,6 +1,6 @@
 """
-new Env("哔哩哔哩-【日常】")
 cron : 5 1 * * *
+new Env("哔哩哔哩-【日常】")
 """
 from Bilibili_User import *
 
