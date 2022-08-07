@@ -1,6 +1,6 @@
 """
-new Env("哔哩哔哩-【basic】")
 cron : 2 1 * * *
+new Env("哔哩哔哩-【basic】")
 """
 
 import json
