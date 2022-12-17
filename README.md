@@ -6,7 +6,7 @@
 
 ## 配置文件详细的视频设置教程 http://b23.tv/cAyjDng  有能力就投两个币吧，我没多少硬币了
 ### ql repo https://github.com/wangquanfugui233/Bilibili_Python.git "Bilibili_" "Dev_"
-    ql repo https://ghproxy.com/https://github.com/wangquanfugui233/Bilibili_Python.git "Bilibili_" "Dev_"
+    ql repo https://ghproxy.com/https://github.com/wangquanfugui233/Bilibili_Python.git "Bilibili_" "Dev_"  (带代理)
 ## 使用方法：
 拉库完毕后，请跑一次Bilibili_cofig.py ，会自动生成json文件，把cookie填在对应位置就行了，修改投币数量为coin:1或者2，如图：
 
