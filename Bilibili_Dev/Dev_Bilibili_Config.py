@@ -1,9 +1,8 @@
 """
 cron: 1 1 1 1 *
-new Env('哔哩哔哩dev-【配置】')
+new Env('哔哩哔哩-【配置】')
 定时随意，每次更新运行两下
 """
-
 
 import json
 import logging
@@ -75,11 +74,14 @@ class Config:
     def create_file(self):
         with open('./Bilibili_config.json', 'w', encoding='utf-8') as f:
             json.dump({"Users": [{"Cookie": ""}], "Drop_coin": [{"coin": 1}], "max_page": 50, "max_thread": 7,
-                       "black_list": [], "white_list": [], "favorite": []}, f, ensure_ascii=False, indent=4)
+                       "black_list": [], "white_list": [], "favorite": [], "follow_author": False, "proxy": []}, f,
+                      ensure_ascii=False, indent=4)
         self.logger.info("Bilibili_config.json文件已经生成，请在文件中添加Cookie 如：")
         self.logger.info('"Users": [{"Cookie": "这里是你的cookie"}]')
-        self.logger.info('默认生成单帐号，投币数量为1，天选页数为50，投币线程数为7，黑名单为空，白名单为空，指定的投币up主为空')
-        self.logger.info('如需多账号，则如 "Users": [{"Cookie": "这里是你的cookie"}, {"Cookie": "这里是你的cookie"},{}...]')
+        self.logger.info(
+            '默认生成单帐号，投币数量为1，天选页数为50，投币线程数为7，黑名单为空，白名单为空，指定的投币up主为空')
+        self.logger.info(
+            '如需多账号，则如 "Users": [{"Cookie": "这里是你的cookie"}, {"Cookie": "这里是你的cookie"},{}...]')
 
     def update_config(self):
         coin = {'coin': 1}
@@ -115,8 +117,14 @@ class Config:
             if "follow_author" in data:
                 self.logger.info("关注作者开关存在")
             else:
-                self.logger.info("关注作者开关不存在，默认开启")
-                data.update({"follow_author": True})
+                self.logger.info("关注作者开关不存在，默认关闭")
+                data.update({"follow_author": False})
+                self.update_json(data)
+            if "proxy" in data:
+                self.logger.info("代理配置存在")
+            else:
+                self.logger.info("更新代理配置")
+                data.update({"proxy": []})
                 self.update_json(data)
 
     def insert_data(self, num):
@@ -232,6 +240,27 @@ class Config:
             self.logger.error(e)
             return False
 
+    def fetch_proxy(self):
+        try:
+            with open("./Bilibili_config.json", "r", encoding='utf-8') as f:
+                proxy = json.load(f)
+                return proxy['proxy']
+        except Exception as e:
+            self.logger.error(e)
+            return None
+
+    def remove_proxy(self, proxy_i):
+        try:
+            with open("./Bilibili_config.json", "r", encoding='utf-8') as f:
+                proxy = json.load(f)
+                for i in proxy['proxy']:
+                    if i == proxy_i:
+                        proxy['proxy'].remove(i)
+                self.update_json(proxy)
+                self.logger.info("删了代理")
+        except Exception as e:
+            self.logger.info("发现了异常")
+
     def check_config(self):
         cookies = self.fetch_cookies()
         csrfs = self.fetch_csrf(cookies)
@@ -243,16 +272,17 @@ class Config:
             else:
                 if len(cookies) > len(coins):
                     self.insert_data(len(cookies) - len(coins))
+                    self.update_config()
                 else:
                     self.logger.info("投币配置貌似多于帐号数量，不影响程序运行")
+                    self.update_config()
         else:
             self.logger.info("检查一下cookie吧")
 
     def basic_info(self):
         self.logger.info("json文件路径为：" + str(os.getcwd()) + "\Bilibili_config.json")
-        self.logger.info("【这是提醒不是错误】：cookie不能有大括号！！！！！！")
-        self.logger.info("配置文件说明BV号：BV1SB4y1e7Vr")
-        self.logger.info('author: github@wangquanfugui233')
+        self.logger.info("cookie来源可从Bilibili.com,按f12选择网络（network也行）按f5刷新页面从网络中找到nav名称")
+        self.logger.info("在请求标头里，滑动选中cookie（不要右键选中复制值），给我ctrl+c就行")
         if self.check_json():
             self.logger.info("开始检查配置文件")
             self.check_config()
