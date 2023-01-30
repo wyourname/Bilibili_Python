@@ -1,4 +1,7 @@
-
+"""
+new Env("哔哩哔哩-取关")
+cron : 2 1 */15 * *
+"""
 from Dev_Bilibili_User import Basic
 
 

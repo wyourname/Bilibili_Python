@@ -1,3 +1,8 @@
+"""
+new Env("哔哩哔哩-天选中奖通知")
+cron 1 23 * * *
+
+"""
 from Dev_Bilibili_User import *
 from notify import send
 import datetime

@@ -9,7 +9,7 @@ import time
 
 from urllib3.exceptions import ConnectTimeoutError
 
-from Bilibili_Config import Config
+from Dev_Bilibili_Config import Config
 import requests
 
 
@@ -138,7 +138,7 @@ class Basic(Config):
             return None
 
     def user_info(self):
-        self.logger.info("更新：将已关注我的取关硬币将够，加入代理（未测试），感觉鸡肋")
+        self.logger.info("更新：将已关注我的取关硬币将够，加入代理感觉鸡肋")
         self.check_proxy()
         p_list = self.proxy_num()
         for i in range(len(self.cookies)):
