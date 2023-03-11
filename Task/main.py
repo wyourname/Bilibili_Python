@@ -1,7 +1,7 @@
 import asyncio
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from Daily import dailytask
+from daily import dailytask
 
 
 async def job():
@@ -17,6 +17,6 @@ scheduler.add_job(job, 'cron', hour='18', minute=17, timezone=tz)
 scheduler.add_job(job, 'cron', hour=18, minute=18, timezone=tz)
 # 启动调度程序
 scheduler.start()
-
+print('Starting')
 # 进入事件循环 调度程序
 asyncio.get_event_loop().run_forever()
