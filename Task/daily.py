@@ -1,7 +1,12 @@
 import asyncio
 import random
 import time
-
+import os
+import sys
+import urllib.parse
+import re
+pythonpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+sys.path.append(pythonpath)
 from Basic.depend import necessary
 
 
@@ -119,29 +124,55 @@ class dailytask(necessary):
         else:
             self.logger.info(live_sign['message'])
 
+    async def receive_b_money(self, csrf):
+        receive = "https://api.bilibili.com/x/vip/privilege/receive"
+        vip_info = await self.requests_method(self.vip_url, "get")
+        if vip_info['code'] == 0:
+            for status in vip_info['data']['list']:
+                if status['vip_type'] == 2 and status['state'] == 0:
+                    data = {
+                        "type": status['type'],
+                        "csrf": csrf
+                    }
+                    result = await self.requests_method(receive, method='post', data=data)
+                    if result['code'] == 0:
+                        self.logger.info("年度大会员B币等优惠领取成功")
+                    else:
+                        self.logger.error(f"错误代码{result['code']} 如：-400：请求错误 69800：网络繁忙 请稍后再试 69801：你已领取过该权益")
+                else:
+                    break
+
     async def run(self):
         cfg_data = await self.start()
         self.headers["Referer"] = "https://www.bilibili.com/"
         for key, value in cfg_data.items():
+            # if value['pushplus_token'] is None:
+            #     self.logger.info(f"{key}有pushplus_token为空，跟不上")
+            # else:
+            #     await self.send_pushplus_message(token=value['pushplus_token'], title='test', message="test")
             self.headers['Cookie'] = value['cookie']
             self.headers['User-Agent'] = random.choice(self.ua_list)
-            csrf = {cookie_str.split("=")[0].strip(): cookie_str.split("=")[1].strip() for cookie_str in
-                    value['cookie'].split(";")}.get("bili_jct", "")
+            csrf_match = re.search(r"bili_jct=([^;]+)", value['cookie'])
+            if csrf_match:
+                csrf = csrf_match.group(1)
+                # print(csrf)
             if await self.verification_cookie(self.url):
                 await self.clockin_task()
+                await self.receive_b_money(csrf)
                 await self.live_task()
-                if value['coin'] == 0:
-                    self.logger.info("你设置了不投币，跳过")
-                    continue
+                # if value['coin'] == 0:
+                #     self.logger.info("你设置了不投币，跳过")
+                #     continue
+                if not value['DesignateUp']:
+                    await self.random_drop_task()
+                    await self.drop_action(value['coin'], csrf, 3)  # 数字3代表延迟3秒
                 else:
-                    if not value['DesignateUp']:
-                        await self.random_drop_task()
-                        await self.drop_action(value['coin'], csrf, 3)
-                    else:
-                        await self.designate_uid_drop_task(value['DesignateUp'])
-                        await self.drop_action(value['coin'], csrf, 3)
+                    await self.designate_uid_drop_task(value['DesignateUp'])
+                    await self.drop_action(value['coin'], csrf, 3)
             else:
-                self.logger.info(f"{key}cookie失效啦")
+                msg = f"{key}cookie失效啦"
+                self.logger.info(msg)
+                await self.send_pushplus_message(token=value['pushplus_token'], title='B站账号失效', message=msg)
                 continue
 
 
