@@ -30,13 +30,12 @@ class login(necessary):
         qr = qrcode.QRCode(version=1, box_size=1, border=0)
         qr.add_data(url)
         qr.make(fit=True)
-
+        qr_img = qr.make_image()
+        qr_img.save("qrcode.png")
         # 获取二维码数据矩阵
         matrix = qr.get_matrix()
-
         # 定义用于绘制二维码的字符集
         char_blocks = ["  ", "██"]
-
         # 打印二维码
         for row in matrix:
             line = "".join(char_blocks[pixel] for pixel in row)
@@ -68,7 +67,7 @@ class login(necessary):
             elif data['data']['code'] == 86090:
                 self.logger.info("给阿姨倒杯卡布奇诺，阿姨你快点啊")
             elif data['data']['code'] == 86101:
-                self.logger.info("请用B站客户端扫码登录确认")
+                self.logger.info("你有180秒的时间，请用B站客户端扫码登录确认，可以在输出日志查找二维码，脚本不要停止！")
             time.sleep(2)
 
 
