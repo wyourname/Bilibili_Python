@@ -160,9 +160,9 @@ class dailytask(necessary):
                 await self.clockin_task()
                 await self.receive_b_money(csrf)
                 await self.live_task()
-                # if value['coin'] == 0:
-                #     self.logger.info("你设置了不投币，跳过")
-                #     continue
+                if value['coin'] == 0:
+                    self.logger.info("你设置了不投币，跳过")
+                    continue
                 if not value['DesignateUp']:
                     await self.random_drop_task()
                     await self.drop_action(value['coin'], csrf, 3)  # 数字3代表延迟3秒
