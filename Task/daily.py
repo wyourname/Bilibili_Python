@@ -8,6 +8,7 @@ import re
 pythonpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(pythonpath)
 from Basic.depend import necessary
+from Basic.refresh import Bilicookie
 
 
 class dailytask(necessary):
@@ -172,8 +173,11 @@ class dailytask(necessary):
             else:
                 msg = f"{key}cookie失效啦"
                 self.logger.info(msg)
-                await self.send_pushplus_message(token=value['pushplus_token'], title='B站账号失效', message=msg)
-                continue
+                re_cookie = Bilicookie()
+                await re_cookie.start_refresh()
+                self.logger.info("cookie已经刷新，请重新运行脚本")
+                # await self.send_pushplus_message(token=value['pushplus_token'], title='B站账号失效', message=msg)
+                break
 
 
 if __name__ == '__main__':
