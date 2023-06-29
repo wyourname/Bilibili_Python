@@ -2,9 +2,14 @@
 author:wangquanfugui233
 
 """
-import asyncio
+import os 
 import sys
+import asyncio
 import aiohttp
+import time
+import json
+pythonpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+sys.path.append(pythonpath)
 from Basic.config import Config
 
 
@@ -12,21 +17,34 @@ class necessary(Config):
     def __init__(self):
         super().__init__()
 
-    async def requests_method(self, url, method, data=None, p=None):
+    async def requests_method(self, url, method, data=None, p=None,other=None):
         try:
             async with aiohttp.ClientSession() as session:
                 if method == 'get':
                     async with session.get(url, params=data, headers=self.headers, proxy=p) as response:
                         if response.status == 200:
-                            return await response.json()
+                            if other == 'headers':
+                                content = dict(response.headers)
+                                return content
+                            else:
+                                content = await response.text()
+                                return json.loads(content)
                         else:
-                            return await response.json()
+                            content = await response.text()
+                            return json.loads(content)
                 if method == 'post':
                     async with session.post(url, data=data, headers=self.headers, proxy=p) as response:
                         if response.status == 200:
-                            return await response.json()
+                            if other == 'headers':
+                                header = response.headers.getall("Set-Cookie")
+                                content = await response.text()
+                                return header, json.loads(content)
+                            else:
+                                content = await response.text()
+                                return json.loads(content)
                         else:
-                            return await response.json()
+                            content = await response.text()
+                            return json.loads(content)
         except Exception as e:
             self.logger.error(f'请求失败：{e}')
 
@@ -38,7 +56,8 @@ class necessary(Config):
                 self.logger.info(f'{msg["uname"]}-》 你已经是lv6了,无需设置投币了《-')
             else:
                 day = (data['data']['level_info']['next_exp'] - data['data']['level_info']['current_exp']) / 65
-                self.logger.info(f"{msg['uname']}当前等级: {msg['level_info']['current_level']}，银币：{msg['money']},乐观情况下约{day}天升级")
+                self.logger.info(
+                    f"{msg['uname']}当前等级: {msg['level_info']['current_level']}，银币：{msg['money']},乐观情况下约{day}天升级")
             return True
         elif data['code'] == -101:
             self.logger.info(data['message'] + "请检查cookie")
@@ -47,12 +66,25 @@ class necessary(Config):
             self.logger.info(data['message'])
             return False
 
+    async def send_pushplus_message(self, token: str, title, message: str):
+        url = f"http://www.pushplus.plus/send?token={token}&title={title}&content={message}&template=html"
+        data = await self.requests_method(url=url, method="get")
+        if data['code'] == 200:
+            self.logger.info("Sent push plus message successfully")
+        else:
+            self.logger.error("occurred an error when sending push plus message")
+
     async def userinfo(self):
         parameter = await self.start()
         for k1, v1 in parameter.items():
             self.headers['Cookie'] = v1['cookie']
             # print(self.headers)
             await self.verification_cookie(self.url)
+            #你好
+
+
+"""
+"""
 
 
 if __name__ == '__main__':

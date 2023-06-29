@@ -2,7 +2,6 @@ import logging
 import asyncio
 import os
 import sys
-
 import aiofiles
 import yaml
 
@@ -49,6 +48,7 @@ class Config:
         self.prize = "https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/AwardRecord"
         self.send = "https://api.live.bilibili.com/msg/send"
         self.clockin_url = "https://manga.bilibili.com/twirp/activity.v1.Activity/ClockIn"
+        self.vip_url = "https://api.bilibili.com/x/vip/privilege/my"
         self.ua_list = [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47 ",
@@ -57,13 +57,16 @@ class Config:
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 "
             "Safari/537.36 "
         ]
+        self.config_dir = "../config.yaml"
         logging.basicConfig(level=logging.INFO, format='%(message)s')
         self.logger = logging.getLogger(__name__)
 
     async def create_config(self):
         data = {
             'user1': {
-                'cookie': 'xxxx',
+                'cookie': '',
+                'refresh_token': '',
+                'refresh_csrf': '',
                 'coin': 0,
                 'spider_page': 50,
                 'spider_thread': 7,  # 线程数不可超出7
@@ -77,6 +80,8 @@ class Config:
         comments = {
             'user1': {
                 'cookie': '用户登录B站时使用的cookie',
+                'refresh_token': '用户登录B站时使用的refresh_token',
+                'refresh_csrf': '无需理会refresh_csrf，由我处理',
                 'coin': '是否开启B站自动投币功能，0表示关闭，1表示开启，如果你要投币两个我还没适配哦',
                 'spider_page': 'B站天选时爬取的页数',
                 'spider_thread': '线程数不可超出7',
@@ -86,7 +91,7 @@ class Config:
                 'proxylist': '代理列表格式字符串，格式为"ip:port" 不写就默认不代理'
             }
         }
-        async with aiofiles.open('../Basic/config.yaml', mode='w', encoding='utf-8') as f:
+        async with aiofiles.open(self.config_dir, mode='w', encoding='utf-8') as f:
             for key, value in data.items():
                 await f.write(key + ':\n')
                 for k, v in value.items():
@@ -94,9 +99,9 @@ class Config:
             self.logger.info('config.yaml is created,please go to Modify Configuration File')
 
     async def check_config(self):
-        datalist = ['cookie', 'coin', 'spider_page', 'spider_thread', 'blacklist', 'whitelist', 'DesignateUp',
+        datalist = ['cookie','refresh_token','refresh_csrf', 'coin', 'spider_page', 'spider_thread', 'blacklist', 'whitelist', 'DesignateUp',
                     'proxylist']
-        with open('../Basic/config.yaml', 'r', encoding='utf-8') as f:
+        with open(self.config_dir, 'r', encoding='utf-8') as f:
             # 检查配置文件是否正确
             data = yaml.safe_load(f)
             if data is not None:
@@ -108,7 +113,11 @@ class Config:
                         self.logger.info(f'{key}以下键未在 config.yaml 中找到：{not_found},自动添加默认值')
                         for k1 in not_found:
                             if k1 == 'cookie':
-                                data[key][k1] = 'xxxx'
+                                data[key][k1] = ''
+                            elif k1 == 'refresh_token':
+                                data[key][k1] = ''
+                            elif k1 == 'refresh_csrf':
+                                data[key][k1] = ''
                             elif k1 == 'drop':
                                 data[key][k1] = 0
                             elif k1 == 'spider_page':
@@ -125,20 +134,35 @@ class Config:
                 return None
 
     async def correct_config(self, data):
-        with open('../Basic/config.yaml', 'w', encoding='utf-8') as f:
+        with open(self.config_dir, 'w', encoding='utf-8') as f:
             f.write(yaml.dump(data, default_flow_style=False))
         self.logger.info('config.yaml,修改完成')
 
+    async def insert_data(self, key, value):
+        with open(self.config_dir, 'r') as file:
+            data = yaml.safe_load(file)
+
+        # 增加或修改值
+        for k,v in data.items():
+            for k1,v1 in v.items():
+                if k1 == key and v1 != value:
+                    data[k][k1] = value
+        # 写入 YAML 文件
+        with open(self.config_dir, 'w') as file:
+            yaml.dump(data, file)
+            self.logger.info('更新配置文件完成')
+
     async def start(self):
         # 检查配置文件是否存在
-        if not os.path.exists('../Basic/config.yaml'):
+        if not os.path.exists(self.config_dir):
             self.logger.info('config.yaml 不存在，开始创建')
             await self.create_config()
-            sys.exit(1)
+            # sys.exit(1)
         else:
             data = await self.check_config()
             if data is not None:
                 return data
+            
 
 
 # bilibili daily
@@ -146,3 +170,4 @@ class Config:
 if __name__ == '__main__':
     con = Config()
     asyncio.run(con.start())
+    
