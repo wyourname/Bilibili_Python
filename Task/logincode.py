@@ -3,7 +3,6 @@ import sys
 pythonpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(pythonpath)
 from Basic.depend import necessary
-from depend import necessary
 import asyncio
 import qrcode
 import time
