@@ -86,10 +86,10 @@ JNrRuoEUXpabUzGB8QIDAQAB
         await self.confirm_refresh(csrf,o_refresh_token)
 
  
-    async def confirm_refresh(self,n_csrf, o_refresh_token):
+    async def confirm_refresh(self,o_csrf, o_refresh_token):
         confirm_refresh_url = "https://passport.bilibili.com/x/passport-login/web/confirm/refresh"
         post_data = {
-            "csrf": n_csrf,
+            "csrf": o_csrf,
             "refresh_token": o_refresh_token
         }
         data = await self.requests_method(confirm_refresh_url, "post", data=post_data)
@@ -113,12 +113,11 @@ JNrRuoEUXpabUzGB8QIDAQAB
             csrf_match = re.search(r"bili_jct=([^;]+)", value['cookie'])
             if csrf_match:
                 csrf = csrf_match.group(1)
-            # if await self.check_csrf(csrf):
-            # await self.get_refresh_csrf()
-            refresh_csrf=await self.get_refresh_csrf()
-            await self.insert_data('refresh_csrf', refresh_csrf)
-            self.logger.info(f"成功获得refresh_csrf:{refresh_csrf}")
-            await self.refresh_cookie(csrf,refresh_csrf,value['refresh_token'])
+            if await self.check_csrf(csrf):
+                refresh_csrf=await self.get_refresh_csrf()
+                await self.insert_data('refresh_csrf', refresh_csrf)
+                self.logger.info(f"成功获得refresh_csrf:{refresh_csrf}")
+                await self.refresh_cookie(csrf,refresh_csrf,value['refresh_token'])
 
 
 
