@@ -57,7 +57,7 @@ class Config:
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 "
             "Safari/537.36 "
         ]
-        self.config_dir = "./config.yaml"
+        self.config_dir = "../config.yaml"
         logging.basicConfig(level=logging.INFO, format='%(message)s')
         self.logger = logging.getLogger(__name__)
 
@@ -151,6 +151,11 @@ class Config:
         with open(self.config_dir, 'w') as file:
             yaml.dump(data, file)
             self.logger.info('更新配置文件完成')
+
+    async def back_k_data(self, key, v):
+        with open(self.config_dir, 'r') as file:
+            data = yaml.safe_load(file)
+        return data[key][v]
 
     async def start(self):
         # 检查配置文件是否存在
