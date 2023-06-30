@@ -46,7 +46,7 @@ class Lottery(necessary):
         all_partitions = await self.requests_method(self.url7, 'get')
         if all_partitions['code'] == 0:
             for subpartitions in all_partitions['data']:
-                self.logger.info("开始扫描分区: " + subpartitions['name'])
+                self.logger.info("扫描:【" + subpartitions['name']+"】")
                 for small_partition in subpartitions['list']:
                     await self.scan_small_partitions(subpartitions['id'], small_partition['id'],tag_id, csrf)
 
@@ -73,7 +73,7 @@ class Lottery(necessary):
         pattern = re.compile(r"大航海|舰长|.?车车?|手照|代金券|优惠券|勋章|提督|男")
         if lottery_info['code'] == 0:
             if pattern.findall(lottery_info['data']['award_name']) or pattern.findall(lottery_info['data']['require_text']):
-                self.logger.info(f"{args[1]}==房间奖品或要求不符合，skip: {lottery_info['data']['award_name']}，要求为：{lottery_info['data']['require_text']}")
+                self.logger.info(f"✖️ {args[1]}: {lottery_info['data']['award_name']}，要求为：{lottery_info['data']['require_text']}")
             else:
                 if lottery_info['data']['gift_id'] == 0:
                     self.logger.info(f'{args[1]}: 【{lottery_info["data"]["award_name"]}】-- <{lottery_info["data"]["require_text"]}>')
@@ -86,7 +86,7 @@ class Lottery(necessary):
             data = {'id': args[1], 'platfrom': 'pc', 'roomid': args[3], 'csrf': args[5]}
             join_info = await self.requests_method(self.url_tx,data=data, method='post')
             if join_info['code'] == 0:
-                self.logger.info(f'(¬‿¬) 成功参加{args[2]}直播间的天选')
+                self.logger.info(f'✔️ 参加{args[2]}的天选')
                 await self.send_danmu(args[3], args[5])
                 await self.check_relationship(args[0], args[2],args[4], args[5])
             else:
@@ -108,7 +108,7 @@ class Lottery(necessary):
         data = {'beforeTagids': 0, 'afterTagids': args[0], 'fids': args[1], 'csrf': args[3]}
         move_info = await self.requests_method(self.url_relationship, data=data, method='post')
         if move_info['code'] == 0:
-            self.logger.info(f'UP主{args[2]}移动到天选时刻分组成功')
+            self.logger.info(f'{args[2]}移至 天选时刻')
         else:
             self.logger.info(move_info['message'])
 
@@ -127,7 +127,7 @@ class Lottery(necessary):
         time.sleep(1.5)
         danmu_info = await self.requests_method(self.send,method='post',data=data)
         if danmu_info['code'] == 0:
-            self.logger.info(f'------->发送弹幕成功')
+            self.logger.info(f'✔️发送弹幕')
         else:
             self.logger.info(danmu_info['message'])
 
