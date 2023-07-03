@@ -6,47 +6,53 @@ import os
 import sys
 import asyncio
 import aiohttp
-import time
 import json
 pythonpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(pythonpath)
 from Basic.config import Config
-
 
 class necessary(Config):
     def __init__(self):
         super().__init__()
 
     async def requests_method(self, url, method, data=None, p=None,other=None):
-        try:
-            async with aiohttp.ClientSession() as session:
-                if method == 'get':
-                    async with session.get(url, params=data, headers=self.headers, proxy=p) as response:
-                        if response.status == 200:
-                            if other == 'headers':
-                                content = dict(response.headers)
-                                return content
+        max_retries = 3
+        retries = 0
+        while retries < max_retries:
+            try:
+                connector = aiohttp.TCPConnector(ssl=False)
+                async with aiohttp.ClientSession(connector=connector) as session:
+                    if method == 'get':
+                        async with session.get(url, params=data, headers=self.headers, proxy=p) as response:
+                            if response.status == 200:
+                                if other == 'headers':
+                                    content = dict(response.headers)
+                                    return content
+                                else:
+                                    content = await response.text()
+                                    return json.loads(content)
                             else:
                                 content = await response.text()
                                 return json.loads(content)
-                        else:
-                            content = await response.text()
-                            return json.loads(content)
-                if method == 'post':
-                    async with session.post(url, data=data, headers=self.headers, proxy=p) as response:
-                        if response.status == 200:
-                            if other == 'headers':
-                                header = response.headers.getall("Set-Cookie")
-                                content = await response.text()
-                                return header, json.loads(content)
+                    if method == 'post':
+                        async with session.post(url, data=data, headers=self.headers, proxy=p) as response:
+                            if response.status == 200:
+                                if other == 'headers':
+                                    header = response.headers.getall("Set-Cookie")
+                                    content = await response.text()
+                                    return header, json.loads(content)
+                                else:
+                                    content = await response.text()
+                                    return json.loads(content)
                             else:
                                 content = await response.text()
                                 return json.loads(content)
-                        else:
-                            content = await response.text()
-                            return json.loads(content)
-        except Exception as e:
-            self.logger.error(f'请求失败：{e}')
+            except Exception as e:
+                self.logger.error(f'请求失败：{e}')
+                retries += 1
+                print(f'Request failed. Retrying ({retries}/{max_retries})...')
+        if retries == max_retries:
+            print('Max retries exceeded. Unable to establish connection.')
 
     async def verification_cookie(self, url, method='get'):
         data = await self.requests_method(url=url, method=method)
